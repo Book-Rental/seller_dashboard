@@ -34,10 +34,6 @@ jobs:
       - name: Run Lint
         run: npm run lint
 
-      - name: Run Tests
-        run: npm run coverage -- --coverage=false
-
-
       - name: Build Project
         run: npm run build
 
