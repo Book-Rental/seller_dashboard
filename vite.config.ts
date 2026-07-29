@@ -1,7 +1,30 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from "vitest/config";
 import react from '@vitejs/plugin-react'
-
+import cssInjectedByJsPlugin from "vite-plugin-css-injected-by-js";
+import path from "path";
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(),
+     cssInjectedByJsPlugin(),
+  ],
+   test: {
+    globals: true,
+    environment: "jsdom",
+    setupFiles: "./src/tests/setupTests.ts",
+  },
+  build: {
+    lib: {
+      entry: path.resolve(__dirname, "src/index.widget.tsx"),
+      name: "CaasWidget",
+      formats: ["iife"],
+      fileName: () => "demobundle.js",
+    },
+    rollupOptions: {
+      external: [],
+    },
+    minify: true,
+  },
+  define: {
+    "process.env": {},
+  },
 })

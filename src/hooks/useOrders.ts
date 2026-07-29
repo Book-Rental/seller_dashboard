@@ -1,9 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { getSellerOrders } from "../services/orderService";
+import { getOrders } from "../services/orderService";
 
-export const useOrders = () => {
-  return useQuery({
-    queryKey: ["seller-orders"],
-    queryFn: getSellerOrders,
-  });
+export const useOrders = (
+    page: number
+) => {
+    return useQuery({
+        queryKey: ["orders", page],
+        queryFn: () => getOrders(page),
+    });
 };

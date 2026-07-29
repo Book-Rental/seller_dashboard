@@ -1,28 +1,47 @@
-import { Order } from "../types/order";
+import { SellerOrder } from "../types/order";
 import StatusBadge from "./StatusBadge";
 
 type Props = {
-    orders: Order[];
-    showAction?: boolean;
-    onView?: (orderId: string) => void;
+    orders: SellerOrder[];
+    onView?: (orderItemId: string) => void;
 };
 
 const OrderTable = ({
     orders,
-    showAction = false,
     onView,
 }: Props) => {
     return (
-        <div className="overflow-hidden rounded-lg border border-gray-200">
-            <table className="min-w-full">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow-sm">
+            <table className="min-w-[900px] w-full">
                 <thead className="bg-blue-50">
                     <tr>
-                        <th className="px-6 py-4 text-left">Order ID</th>
-                        <th className="px-6 py-4 text-left">Book</th>
-                        <th className="px-6 py-4 text-left">Buyer</th>
-                        <th className="px-6 py-4 text-left">Amount</th>
-                        <th className="px-6 py-4 text-left">Status</th>
-                        <th className="px-6 py-4 text-left">Date</th>   
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">
+                            Order ID
+                        </th>
+
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">
+                            Book
+                        </th>
+
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">
+                            Buyer
+                        </th>
+
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">
+                            Amount
+                        </th>
+
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">
+                            Status
+                        </th>
+
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">
+                            Date
+                        </th>
+
+                        <th className="px-3 py-3 text-center text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">
+                            Action
+                        </th>
                     </tr>
                 </thead>
 
@@ -30,70 +49,64 @@ const OrderTable = ({
                     {orders.length === 0 ? (
                         <tr>
                             <td
-                                colSpan={showAction ? 7 : 6}
-                                className="py-8 text-center text-gray-500"
+                                colSpan={7}
+                                className="py-10 text-center text-gray-500"
                             >
                                 No Orders Found
                             </td>
                         </tr>
                     ) : (
-                        orders.map((order) => {
-                            const item = order.items?.[0];
+                        orders.map((order) => (
+                            <tr
+                                key={order.orderItemId}
+                                className="hover:bg-gray-50"
+                            >
+                                <td className="whitespace-nowrap px-3 py-3 text-sm sm:px-6 sm:py-4">
+                                    {order.orderNumber}
+                                </td>
 
-                            return (
-                                <tr
-                                    key={order._id}
-                                    className={`hover:bg-gray-50 ${onView ? "cursor-pointer" : ""
-                                        }`}
-                                    onClick={() => onView?.(order._id)}
-                                >
-                                    <td className="px-6 py-4">
-                                        {order.orderNumber}
-                                    </td>
+                                <td className="min-w-[180px] px-3 py-3 text-sm sm:px-6 sm:py-4">
+                                    <span className="line-clamp-2">
+                                        {order.bookName}
+                                    </span>
+                                </td>
 
-                                    <td className="px-6 py-4">
-                                        {item?.bookId?.name}
-                                    </td>
+                                <td className="whitespace-nowrap px-3 py-3 text-sm sm:px-6 sm:py-4">
+                                    {order.buyerName}
+                                </td>
 
-                                    <td className="px-6 py-4">
-                                        {order.deliveryAddress?.name}
-                                    </td>
+                                <td className="whitespace-nowrap px-3 py-3 text-sm sm:px-6 sm:py-4">
+                                    ₹{order.rentalPrice}
+                                </td>
 
-                                    <td className="px-6 py-4">
-                                        ₹{order.total}
-                                    </td>
+                                <td className="px-3 py-3 sm:px-6 sm:py-4">
+                                    <StatusBadge
+                                        status={order.status}
+                                    />
+                                </td>
 
-                                    <td className="px-6 py-4">
-                                        <StatusBadge
-                                            status={order.orderStatus}
-                                        />
-                                    </td>
-
-                                    <td className="px-6 py-4">
-                                        {new Date(
-                                            order.createdAt
-                                        ).toLocaleDateString("en-GB", {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                        })}
-                                    </td>
-
-                                    {showAction && (
-                                        <td className="px-6 py-4 text-center">
-                                            <button
-                                                onClick={() =>
-                                                    onView?.(order._id)
-                                                }
-                                                className="font-medium text-blue-600 hover:underline"
-                                            >
-                                                View →
-                                            </button>
-                                        </td>
+                                <td className="whitespace-nowrap px-3 py-3 text-sm sm:px-6 sm:py-4">
+                                    {new Date(
+                                        order.date
+                                    ).toLocaleDateString(
+                                        "en-GB"
                                     )}
-                                </tr>
-                            );
-                        })
+                                </td>
+
+                                <td className="px-3 py-3 text-center sm:px-6 sm:py-4">
+                                    <button
+                                        onClick={() =>
+                                            onView?.(
+                                                order.orderItemId
+                                            )
+                                        }
+                                        className="whitespace-nowrap text-sm font-medium text-blue-600 hover:underline"
+                                    >
+                                        View →
+                                    </button>
+                                </td>
+                            </tr>
+                        ))
                     )}
                 </tbody>
             </table>

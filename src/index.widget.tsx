@@ -2,30 +2,29 @@ import React from "react";
 import { createRoot, Root as ReactRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { Flag } from "./types/widget";
 
 export interface WidgetOptions {
   containerElementId: string;
   name: string;
-  flag: "dashboard" | "orders" | "order-details";
+  flag: Flag;
 }
 
 declare global {
   interface Window {
     renderReactWidget: (config: string) => void;
-    unmountReactWidget: (id: string) => void;
+    unmountReactWidget: (containerElementId: string) => void;
   }
 }
 
 const widgetRoots: Record<string, ReactRoot> = {};
 
 const getOptionsFromDataAttributes = (
-  el: HTMLElement
-): Partial<WidgetOptions> => {
-  return {
-    name: el.getAttribute("data-name") || "",
-    flag: (el.getAttribute("data-flag") as WidgetOptions["flag"]) || "dashboard",
-  };
-};
+  element: HTMLElement
+): Partial<WidgetOptions> => ({
+  name: element.getAttribute("data-name") || "",
+  flag: (element.getAttribute("data-flag") ?? "dashboard") as Flag,
+});
 
 window.renderReactWidget = (config: string) => {
   let parsedOptions: Partial<WidgetOptions> = {};
@@ -33,7 +32,7 @@ window.renderReactWidget = (config: string) => {
   try {
     parsedOptions = JSON.parse(config);
   } catch {
-    console.warn("Invalid JSON config, using data attributes");
+    // If config is not JSON, assume it's the container id.
   }
 
   const containerId =
@@ -42,40 +41,53 @@ window.renderReactWidget = (config: string) => {
   const container = document.getElementById(containerId);
 
   if (!container) {
-    console.error(`Container "${containerId}" not found`);
+    console.error(
+      `Container "${containerId}" not found.`
+    );
     return;
   }
 
-  const dataOptions = getOptionsFromDataAttributes(container);
+  const dataOptions =
+    getOptionsFromDataAttributes(container);
 
   const finalOptions: WidgetOptions = {
-    ...dataOptions,
-    ...parsedOptions,
     containerElementId: containerId,
-  } as WidgetOptions;
+    name:
+      parsedOptions.name ??
+      dataOptions.name ??
+      "",
+    flag:
+      parsedOptions.flag ??
+      dataOptions.flag ??
+      "dashboard",
+  };
 
   if (!finalOptions.name) {
-    console.error("Missing required field: name");
+    console.error(
+      "Missing required field: name"
+    );
     return;
   }
 
-  if (widgetRoots[containerId]) {
-    widgetRoots[containerId].unmount();
-  }
+  let root = widgetRoots[containerId];
 
-  const root = createRoot(container);
+  if (!root) {
+    root = createRoot(container);
+    widgetRoots[containerId] = root;
+  }
 
   root.render(
     <React.StrictMode>
       <App flag={finalOptions.flag} />
     </React.StrictMode>
   );
-
-  widgetRoots[containerId] = root;
 };
 
-window.unmountReactWidget = (containerElementId: string) => {
-  const root = widgetRoots[containerElementId];
+window.unmountReactWidget = (
+  containerElementId: string
+) => {
+  const root =
+    widgetRoots[containerElementId];
 
   if (root) {
     root.unmount();

@@ -12,6 +12,7 @@ export const getSellerDashboard = async () => {
       },
     }
   );
-
+ console.log("response",response.data)
   return response.data;
+
 };
