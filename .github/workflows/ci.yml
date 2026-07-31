@@ -1,4 +1,4 @@
-name: PDPWidget CI/CD
+name: Seller Dashboard CI/CD
 
 on:
   push:
@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    name: Build PDP Widget
+    name: Build Seller Widget
     runs-on: ubuntu-latest
 
     strategy:
@@ -33,6 +33,9 @@ jobs:
 
       - name: Run Lint
         run: npm run lint
+
+      - name: Run Test Coverage
+        run: npm run coverage
 
       - name: Build Project
         run: npm run build

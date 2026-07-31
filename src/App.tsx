@@ -9,64 +9,66 @@ import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
 import MyBooks from "./pages/MyBooks";
 import AddBook from "./pages/AddBook";
+import { useEffect, useState } from "react";
+import { registerSellerNavigation } from "./utils/sellerNavigation";
 
 const queryClient = new QueryClient();
 
 export type Flag =
     | "dashboard"
-    | "orders"
-    | "order-details"
-    | "my-books"
-    | "add-book"
-    | "edit-book";
+    | "seller-orders"
+    | "seller-order-details"
+    | "seller-my-books"
+    | "seller-add-book"
+    | "seller-edit-book";
 
-type AppProps = {
-  flag?: Flag;
-};
 
-function App({ flag }: AppProps) {
-    const pathname = window.location.pathname;
 
-    const searchParams = new URLSearchParams(
-        window.location.search
-    );
+function App() {
+    useEffect(() => {
+        window.dispatchEvent(
+            new CustomEvent("widget-loading-status", {
+                detail: false,
+            })
+        );
+    }, []);
 
-    const bookId = searchParams.get("bookId") ?? "";
+    const [currentPage, setCurrentPage] =
+        useState<Flag>("dashboard");
 
-    const currentPage: Flag =
-        flag ??
-        (pathname === "/dashboard"
-            ? "dashboard"
-            : pathname === "/orders"
-              ? "orders"
-              : pathname === "/order-details"
-                ? "order-details"
-                : pathname === "/my-books"
-                  ? "my-books"
-                  : pathname === "/add-book"
-                    ? "add-book"
-                    : pathname === "/edit-book"
-                      ? "edit-book"
-                      : "dashboard");
+    const [bookId, setBookId] =
+        useState("");
 
+    const [orderItemId, setOrderItemId] = useState("");
+    
+    useEffect(() => {
+        registerSellerNavigation((page, data) => {
+            setCurrentPage(page);
+
+            if (page === "seller-edit-book") {
+                setBookId(data ?? "");
+            }
+
+            if (page === "seller-order-details") {
+                setOrderItemId(data ?? "");
+            }
+        });
+    }, []);
     const renderPage = () => {
         switch (currentPage) {
-            case "dashboard":
-                return <Dashboard />;
-
-            case "orders":
+            case "seller-orders":
                 return <Orders />;
 
-            case "order-details":
-                return <OrderDetails />;
+            case "seller-order-details":
+                return <OrderDetails orderItemId={orderItemId}/>;
 
-            case "my-books":
+            case "seller-my-books":
                 return <MyBooks />;
 
-            case "add-book":
+            case "seller-add-book":
                 return <AddBook mode="create" />;
 
-            case "edit-book":
+            case "seller-edit-book":
                 return (
                     <AddBook
                         mode="edit"

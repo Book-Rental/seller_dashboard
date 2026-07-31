@@ -19,7 +19,7 @@ ReactDOM.createRoot(
         {/* <App flag="order-details" /> */}
 
         {/* My Books */}
-        <App flag="my-books" />
+        <App />
 
         {/* Add Book */}
         {/* <App flag="add-book" /> */}

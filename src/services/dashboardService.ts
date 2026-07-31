@@ -7,9 +7,7 @@ export const getSellerDashboard = async () => {
   const response = await axios.get(
     `${BASE_URL}/api/order/seller/dashboard`,
     {
-      headers: {
-        withCredentials: true,
-      },
+      withCredentials:true,
     }
   );
  console.log("response",response.data)

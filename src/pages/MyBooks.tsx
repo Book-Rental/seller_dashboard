@@ -8,13 +8,13 @@ import {
 import BookTable from "../components/BookTable";
 import { useSellerBooks } from "../hooks/useSellerBooks";
 import { SellerBook } from "../types/book";
-import { redirectToAddBook } from "../utils/navigation";
+
+import SellerLayout from "../components/SellerLayout";
+import { redirectToAddBook } from "../utils/sellerNavigation";
+
 
 const MyBooks = () => {
-    const user = JSON.parse(
-        localStorage.getItem("user") || "{}"
-    );
-
+    const user = window.HOST_USER_INFO
     const sellerId = user._id;
 
     const [page, setPage] = useState(1);
@@ -51,6 +51,7 @@ const MyBooks = () => {
     }, [books, availability]);
 
     return (
+         <SellerLayout currentPage="seller-my-books">
         <div className="min-h-screen p-4 sm:p-6 lg:p-8">
             <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -138,6 +139,7 @@ const MyBooks = () => {
                 </>
             )}
         </div>
+        </SellerLayout>
     );
 };
 

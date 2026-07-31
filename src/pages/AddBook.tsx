@@ -5,6 +5,8 @@ import {
 
 import BookForm from "../components/BookForm";
 import { useBookById } from "../hooks/useBookById";
+import SellerLayout from "../components/SellerLayout";
+
 
 type AddBookProps = {
     mode?: "create" | "edit";
@@ -15,44 +17,42 @@ const AddBook = ({
     mode = "create",
     bookId,
 }: AddBookProps) => {
-    const {
-        data,
-        isLoading,
-        isError,
-        error,
-    } = useBookById(bookId ?? "");
+    const { data, isLoading, isError, error } = useBookById(bookId ?? "");
 
     if (mode === "edit") {
         if (isLoading) {
             return (
-                <div className="flex min-h-[24rem] items-center justify-center px-4">
-                    <Rb_LoadingSpinner />
-                </div>
+                <SellerLayout currentPage="seller-add-book">
+                    <div className="flex min-h-[24rem] items-center justify-center px-4">
+                        <Rb_LoadingSpinner />
+                    </div>
+                </SellerLayout>
             );
         }
 
         if (isError) {
             return (
-                <div className="flex min-h-[24rem] items-center justify-center px-4 text-center">
-                    <Rb_Text className="max-w-md break-words">
-                        {error instanceof Error
-                            ? error.message
-                            : "Failed to load book"}
-                    </Rb_Text>
-                </div>
+                <SellerLayout currentPage="seller-add-book">
+                    <div className="flex min-h-[24rem] items-center justify-center px-4 text-center">
+                        <Rb_Text className="max-w-md break-words">
+                            {error instanceof Error ? error.message : "Failed to load book"}
+                        </Rb_Text>
+                    </div>
+                </SellerLayout>
             );
         }
 
         return (
-            <BookForm
-                mode="edit"
-                bookId={bookId}
-                initialData={data?.data}
-            />
+            <SellerLayout currentPage="seller-add-book">
+                <BookForm mode="edit" bookId={bookId} initialData={data?.data} />
+            </SellerLayout>
         );
     }
 
-    return <BookForm mode="create" />;
+    return (
+        <SellerLayout currentPage="seller-add-book">
+            <BookForm mode="create" />
+        </SellerLayout>
+    );
 };
-
 export default AddBook;

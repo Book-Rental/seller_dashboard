@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { Rb_Button, Rb_LoadingSpinner, Rb_Text } from "@rentbook/rentbook-ui-lib";
 import StatusBadge from "../components/StatusBadge";
-import { redirectToOrders } from "../utils/navigation";
 import { useOrderDetails } from "../hooks/useOrderDetails";
 import { useUpdateOrderStatus } from "../hooks/useUpdateOrderStatus";
 import OrderTimeline from "../components/OrderTimeline";
+import SellerLayout from "../components/SellerLayout";
+import { redirectToOrders } from "../utils/sellerNavigation";
 
-const OrderDetails = () => {
-    const orderItemId =
-        new URLSearchParams(window.location.search).get("orderItemId") || "";
+type OrderDetailsProps = {
+    orderItemId: string;
+};
+
+const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
+    
 
     const {
         data,
@@ -75,6 +79,7 @@ const OrderDetails = () => {
     }
 
     return (
+        <SellerLayout currentPage="seller-order-details">
         <div className="min-h-screen bg-gray-50">
 
             <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8 lg:py-10">
@@ -607,6 +612,7 @@ const OrderDetails = () => {
             </div>
 
         </div>
+        </SellerLayout>
     );
 };
 

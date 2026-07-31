@@ -7,7 +7,9 @@ import {
 import OrderTable from "../components/OrderTable";
 import { useOrders } from "../hooks/useOrders";
 import { SellerOrder } from "../types/order";
-import { redirectToOrderDetails } from "../utils/navigation";
+import SellerLayout from "../components/SellerLayout";
+import { redirectToOrderDetails } from "../utils/sellerNavigation";
+
 
 const Orders = () => {
     const [page, setPage] = useState(1);
@@ -84,6 +86,7 @@ const Orders = () => {
     ]);
 
     return (
+        <SellerLayout currentPage="seller-orders">
         <div className="min-h-screen p-4 sm:p-6 lg:p-8">
             <div className="mb-6 sm:mb-8">
                 <Rb_Text
@@ -180,6 +183,7 @@ const Orders = () => {
                 </div>
             )}
         </div>
+        </SellerLayout>
     );
 };
 

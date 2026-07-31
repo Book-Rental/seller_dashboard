@@ -5,7 +5,7 @@ type Props = {
         deliveredDate: string | null;
         returnDate?: string | null;
     };
-};
+};  
 
 const steps = [
     {

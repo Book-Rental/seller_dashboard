@@ -2,11 +2,10 @@ import { Rb_LoadingSpinner, Rb_Text } from "@rentbook/rentbook-ui-lib";
 import { useDashboard } from "../hooks/useDashboard";
 import { useRecentOrders } from "../hooks/useRecentOrders";
 import RecentOrdersTable from "../components/RecentOrdersTable";
-import {
-    redirectToOrderDetails,
-    redirectToOrders,
-} from "../utils/navigation";
 import { RecentOrder } from "../types/order";
+import SellerLayout from "../components/SellerLayout";
+import { redirectToOrderDetails, redirectToOrders } from "../utils/sellerNavigation";
+
 
 const Dashboard = () => {
     const { data: dashboardData } = useDashboard();
@@ -38,6 +37,7 @@ const Dashboard = () => {
         data?.data?.orders ?? [];
 
     return (
+        <SellerLayout currentPage="dashboard">
         <div className="min-h-screen p-4 sm:p-6 lg:p-8">
             <Rb_Text
                 variant="h1"
@@ -98,6 +98,7 @@ const Dashboard = () => {
                 )}
             </div>
         </div>
+        </SellerLayout>
     );
 };
 

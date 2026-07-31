@@ -4,9 +4,9 @@ import { useCreateBook } from "../hooks/useCreateBook";
 import { useUpdateBook } from "../hooks/useUpdateBook";
 import { Rb_Button, Rb_Input, Rb_Text } from "@rentbook/rentbook-ui-lib";
 import { useCategories } from "../hooks/useCategories";
-import { redirectToMyBooks } from "../utils/navigation";
 import { showToast } from "../utils/toast";
 import { BiChevronDown } from "react-icons/bi";
+import { redirectToMyBooks } from "../utils/sellerNavigation";
 
 type BookFormValues = {
     name: string;
@@ -104,12 +104,7 @@ const BookForm = ({
         setImages((prev) => prev.filter((_, i) => i !== index));
     };
 
-    const getUser = () => {
-        const value = localStorage.getItem("user");
-        return value ? JSON.parse(value) : null;
-    };
-
-    const user = getUser();
+    const user = window.HOST_USER_INFO;
     const { mutate, isPending } = useCreateBook();
     const {
         mutate: updateBook,

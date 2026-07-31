@@ -1,11 +1,11 @@
 import { Rb_Button } from "@rentbook/rentbook-ui-lib";
 import { SellerBook } from "../types/book";
 import AvailabilityBadge from "./AvailabilityBadge";
-import { redirectToEditBook } from "../utils/navigation";
 import { useState } from "react";
 import DeleteBookModal from "./DeleteBookModal";
 import { useDeleteBook } from "../hooks/useDeleteBook";
 import { showToast } from "../utils/toast";
+import { redirectToEditBook } from "../utils/sellerNavigation";
 
 type Props = {
     books: SellerBook[];
