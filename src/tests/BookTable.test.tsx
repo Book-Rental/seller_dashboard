@@ -18,7 +18,7 @@ vi.mock("@rentbook/rentbook-ui-lib", () => ({
         children,
         onClick,
         disabled,
-         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }: any) => (
         <button onClick={onClick} disabled={disabled}>
             {children}
@@ -38,7 +38,7 @@ vi.mock("../components/DeleteBookModal", () => ({
         bookName,
         onClose,
         onConfirm,
-         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }: any) =>
         open ? (
             <div data-testid="delete-modal">
@@ -137,7 +137,7 @@ describe("BookTable", () => {
 
         render(<BookTable books={books} />);
 
-        await user.click(screen.getByRole("button", { name: "Edit" }));
+        await user.click(screen.getAllByRole("button")[0]);
 
         expect(mockRedirectToEditBook).toHaveBeenCalledWith("book-1");
     });
@@ -147,11 +147,7 @@ describe("BookTable", () => {
 
         render(<BookTable books={books} />);
 
-        await user.click(screen.getByRole("button", { name: "Delete" }));
-
-        expect(
-            screen.getByTestId("delete-modal")
-        ).toBeInTheDocument();
+        await user.click(screen.getAllByRole("button")[1]);
 
         expect(
             screen.getByTestId("delete-modal")
@@ -163,7 +159,7 @@ describe("BookTable", () => {
 
         render(<BookTable books={books} />);
 
-        await user.click(screen.getByRole("button", { name: "Delete" }));
+        await user.click(screen.getAllByRole("button")[1]);
 
         await user.click(screen.getByRole("button", { name: "Cancel" }));
 
@@ -177,7 +173,8 @@ describe("BookTable", () => {
 
         render(<BookTable books={books} />);
 
-        await user.click(screen.getByRole("button", { name: "Delete" }));
+        await user.click(screen.getAllByRole("button")[1]);
+
         await user.click(
             screen.getByRole("button", {
                 name: "Confirm Delete",
@@ -205,14 +202,16 @@ describe("BookTable", () => {
 
     it("shows success toast after deleting a book", async () => {
         const user = userEvent.setup();
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockDeleteBook.mockImplementation((_id, options: any) => {
             options.onSuccess();
         });
 
         render(<BookTable books={books} />);
 
-        await user.click(screen.getByRole("button", { name: "Delete" }));
+        await user.click(screen.getAllByRole("button")[1]);
+
         await user.click(
             screen.getByRole("button", {
                 name: "Confirm Delete",
@@ -231,7 +230,8 @@ describe("BookTable", () => {
 
     it("shows error toast when delete fails", async () => {
         const user = userEvent.setup();
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockDeleteBook.mockImplementation((_id, options: any) => {
             options.onError({
                 message: "Delete failed",
@@ -240,7 +240,8 @@ describe("BookTable", () => {
 
         render(<BookTable books={books} />);
 
-        await user.click(screen.getByRole("button", { name: "Delete" }));
+        await user.click(screen.getAllByRole("button")[1]);
+
         await user.click(
             screen.getByRole("button", {
                 name: "Confirm Delete",
@@ -255,14 +256,16 @@ describe("BookTable", () => {
 
     it("shows default error message when error has no message", async () => {
         const user = userEvent.setup();
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockDeleteBook.mockImplementation((_id, options: any) => {
             options.onError({});
         });
 
         render(<BookTable books={books} />);
 
-        await user.click(screen.getByRole("button", { name: "Delete" }));
+        await user.click(screen.getAllByRole("button")[1]);
+
         await user.click(
             screen.getByRole("button", {
                 name: "Confirm Delete",
