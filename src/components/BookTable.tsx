@@ -6,6 +6,8 @@ import DeleteBookModal from "./DeleteBookModal";
 import { useDeleteBook } from "../hooks/useDeleteBook";
 import { showToast } from "../utils/toast";
 import { redirectToEditBook } from "../utils/sellerNavigation";
+import { MdOutlineDelete } from "react-icons/md";
+import { TbEdit } from "react-icons/tb";
 
 type Props = {
     books: SellerBook[];
@@ -145,7 +147,7 @@ const BookTable = ({
                                                     redirectToEditBook(book._id)
                                                 }
                                             >
-                                                Edit
+                                                <TbEdit />
                                             </Rb_Button>
 
                                             <Rb_Button
@@ -156,7 +158,7 @@ const BookTable = ({
                                                     setSelectedBook(book)
                                                 }
                                             >
-                                                Delete
+                                                <MdOutlineDelete />
                                             </Rb_Button>
                                         </div>
 
