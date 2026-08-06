@@ -9,6 +9,7 @@ import { redirectToOrders } from "../utils/sellerNavigation";
 import { useMarkReadyForPickup } from "../hooks/useMarkReadyForPickup";
 import { useShipmentDetails } from "../hooks/useShipmentDetails";
 import ProgressTimeline from "../components/ProgressTimeline";
+import { BiPhone, BiUser } from "react-icons/bi";
 
 type OrderDetailsProps = {
     orderItemId: string;
@@ -25,10 +26,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
 
     const order = data?.data;
 
-    const { data: shipmentData } =
-        useShipmentDetails(orderItemId);
 
-    const shipment = shipmentData?.data;
 
     const { mutate } = useUpdateOrderStatus();
 
@@ -57,7 +55,12 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
     const handleReadyForPickup = () => {
         mutateReadyForPickup(orderItemId);
     };
+    const { data: shipmentData } = useShipmentDetails(orderItemId, {
+        // Only fetch if orderItemId exists AND the status is confirmed
+        enabled: !!orderItemId && order?.itemStatus === 'confirmed',
+    });
 
+    const shipment = shipmentData?.data;
     const handleReject = () => {
         setLoadingAction("reject");
 
@@ -547,7 +550,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
                                 )}
 
                                 {order.itemStatus === "confirmed" &&
-                                    !shipment && (
+                                    shipment?.currentStatus == 'Created' && (
 
                                         <div className="mt-6 space-y-3">
                                             <Rb_Button
@@ -563,14 +566,40 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
                                     )}
 
                                 {shipment && (
-                                    <div className="mt-6 rounded-lg border bg-blue-50 p-4">
-                                        <p className="font-semibold">
+                                    <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50 p-5 shadow-sm">
+                                        <h3 className="mb-4 text-lg font-semibold text-gray-800">
                                             Shipment Status
-                                        </p>
+                                        </h3>
 
-                                        <StatusBadge
-                                            status={shipment.currentStatus}
-                                        />
+                                        <div className="mb-4">
+                                            <StatusBadge status={shipment.currentStatus} />
+                                        </div>
+
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="rounded-full bg-white p-2 shadow-sm">
+                                                    <BiUser size={18} className="text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500">Pickup Agent</p>
+                                                    <p className="font-medium text-gray-800">
+                                                        {shipment.pickupAgent.fullName}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex items-center gap-3">
+                                                <div className="rounded-full bg-white p-2 shadow-sm">
+                                                    <BiPhone size={18} className="text-green-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs text-gray-500">Contact Number</p>
+                                                    <p className="font-medium text-gray-800">
+                                                        {shipment.pickupAgent.phoneNumber}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                                 {shipment?.journey?.length > 0 && (
@@ -580,7 +609,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
                                         </h3>
 
                                         <ProgressTimeline
-                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                             timeline={shipment.journey.map((item: any) => ({
                                                 label: item.event,
                                                 date: item.eventAt,
