@@ -6,8 +6,7 @@ export const useSellerBooks = (
     page: number,
     categoryName: string
 ) => {
-    console.log("Seller ID:", sellerId);
-
+    
     return useQuery({
         queryKey: [
             "seller-books",
