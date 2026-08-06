@@ -580,6 +580,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
                                         </h3>
 
                                         <ProgressTimeline
+                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                             timeline={shipment.journey.map((item: any) => ({
                                                 label: item.event,
                                                 date: item.eventAt,
