@@ -10,16 +10,11 @@ export const getSellerBooks = async (
         page: String(page),
         limit: String(limit),
     });
-    console.log("Category:", categoryName);
-    console.log(
-        `${API_URL}/api/book/seller/${sellerId}?${params.toString()}`
-    );
+    
     if (categoryName) {
         params.append("categoryName", categoryName);
     }
-    console.log(
-        `${API_URL}/api/book/seller/${sellerId}?${params.toString()}`
-    );
+    
     const response = await fetch(
         `${API_URL}/api/book/seller/${sellerId}?${params.toString()}`,
         {

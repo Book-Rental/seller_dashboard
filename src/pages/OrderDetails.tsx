@@ -239,6 +239,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
 
                                 <OrderTimeline
                                     timeline={order.timeline}
+                                    itemStatus={order.itemStatus}
                                 />
 
                             </div>
@@ -571,34 +572,38 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
                                             Shipment Status
                                         </h3>
 
-                                        <div className="mb-4">
+                                        <div className="space-y-4">
                                             <StatusBadge status={shipment.currentStatus} />
-                                        </div>
 
-                                        <div className="space-y-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="rounded-full bg-white p-2 shadow-sm">
-                                                    <BiUser size={18} className="text-blue-600" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs text-gray-500">Pickup Agent</p>
-                                                    <p className="font-medium text-gray-800">
-                                                        {shipment.pickupAgent.fullName}
-                                                    </p>
-                                                </div>
-                                            </div>
+                                            {shipment?.pickupAgent && (
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="rounded-full bg-white p-2 shadow-sm">
+                                                            <BiUser size={18} className="text-blue-600" />
+                                                        </div>
 
-                                            <div className="flex items-center gap-3">
-                                                <div className="rounded-full bg-white p-2 shadow-sm">
-                                                    <BiPhone size={18} className="text-green-600" />
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Pickup Agent</p>
+                                                            <p className="font-medium text-gray-800">
+                                                                {shipment.pickupAgent.fullName}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="rounded-full bg-white p-2 shadow-sm">
+                                                            <BiPhone size={18} className="text-green-600" />
+                                                        </div>
+
+                                                        <div>
+                                                            <p className="text-xs text-gray-500">Contact Number</p>
+                                                            <p className="font-medium text-gray-800">
+                                                                {shipment.pickupAgent.phoneNumber}
+                                                            </p>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-xs text-gray-500">Contact Number</p>
-                                                    <p className="font-medium text-gray-800">
-                                                        {shipment.pickupAgent.phoneNumber}
-                                                    </p>
-                                                </div>
-                                            </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}

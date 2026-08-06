@@ -10,7 +10,6 @@ export const getSellerDashboard = async () => {
       withCredentials:true,
     }
   );
- console.log("response",response.data)
   return response.data;
 
 };
