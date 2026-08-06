@@ -7,6 +7,8 @@ import OrderTimeline from "../components/OrderTimeline";
 import SellerLayout from "../components/SellerLayout";
 import { redirectToOrders } from "../utils/sellerNavigation";
 import { useMarkReadyForPickup } from "../hooks/useMarkReadyForPickup";
+import { useShipmentDetails } from "../hooks/useShipmentDetails";
+import ProgressTimeline from "../components/ProgressTimeline";
 
 type OrderDetailsProps = {
     orderItemId: string;
@@ -22,6 +24,11 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
     } = useOrderDetails(orderItemId);
 
     const order = data?.data;
+
+    const { data: shipmentData } =
+        useShipmentDetails(orderItemId);
+
+    const shipment = shipmentData?.data;
 
     const { mutate } = useUpdateOrderStatus();
 
@@ -539,22 +546,48 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
 
                                 )}
 
-                                {order.itemStatus === "confirmed" && (
+                                {order.itemStatus === "confirmed" &&
+                                    !shipment && (
 
-                                    <div className="mt-6">
+                                        <div className="mt-6 space-y-3">
+                                            <Rb_Button
+                                                onClick={handleReadyForPickup}
+                                                disabled={isMarkingReady}
+                                                className="w-full"
+                                            >
+                                                {isMarkingReady
+                                                    ? "Marking as Ready..."
+                                                    : "Ready For Pickup"}
+                                            </Rb_Button>
+                                        </div>
+                                    )}
 
-                                        <Rb_Button
-                                            onClick={handleReadyForPickup}
-                                            disabled={isMarkingReady}
-                                            className="w-full"
-                                        >
-                                            {isMarkingReady
-                                                ? "Marking as Ready..."
-                                                : "Ready for Pickup"}
-                                        </Rb_Button>
+                                {shipment && (
+                                    <div className="mt-6 rounded-lg border bg-blue-50 p-4">
+                                        <p className="font-semibold">
+                                            Shipment Status
+                                        </p>
 
+                                        <StatusBadge
+                                            status={shipment.currentStatus}
+                                        />
                                     </div>
+                                )}
+                                {shipment?.journey?.length > 0 && (
+                                    <div className="mt-4 rounded-lg bg-white p-4 shadow">
+                                        <h3 className="mb-3 font-semibold">
+                                            Shipment Journey
+                                        </h3>
 
+                                        <ProgressTimeline
+                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                            timeline={shipment.journey.map((item: any) => ({
+                                                label: item.event,
+                                                date: item.eventAt,
+                                                description: item.status,
+                                            }))}
+                                        />
+                                    </div>
                                 )}
 
                             </div>
