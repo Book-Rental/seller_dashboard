@@ -31,13 +31,41 @@ describe("OrderTimeline", () => {
         ).toBeInTheDocument();
     });
 
-    it("shows In progress for the current step and Pending for future steps", () => {
+    it("shows In Progress for the current step and Pending for future steps", () => {
         render(<OrderTimeline timeline={timeline} itemStatus="shipped" />);
 
-        // Delivered is the next step after "shipped" -> current step
-        expect(screen.getByText("In progress")).toBeInTheDocument();
+        expect(screen.getByText(/in progress/i)).toBeInTheDocument();
+        expect(screen.getByText("Pending")).toBeInTheDocument();
+    });
 
-        // Returned has not started yet -> still Pending
+    it("renders connector lines colored by completion state", () => {
+        const { container } = render(
+            <OrderTimeline timeline={timeline} itemStatus="shipped" />
+        );
+
+        const greenConnectors =
+            container.querySelectorAll(".bg-green-500.h-0\\.5");
+
+        const grayConnectors =
+            container.querySelectorAll(".bg-gray-200.h-0\\.5");
+
+        expect(greenConnectors).toHaveLength(1);
+        expect(grayConnectors).toHaveLength(2);
+    });
+
+    it("renders Pending when returnDate is omitted", () => {
+        render(
+            <OrderTimeline
+                timeline={{
+                    orderCreated: "2026-07-31T10:00:00.000Z",
+                    shippedDate: "2026-08-01T10:00:00.000Z",
+                    deliveredDate: null,
+                }}
+                itemStatus="shipped"
+            />
+        );
+
+        expect(screen.getByText(/in progress/i)).toBeInTheDocument();
         expect(screen.getByText("Pending")).toBeInTheDocument();
     });
 
@@ -56,19 +84,16 @@ describe("OrderTimeline", () => {
             <OrderTimeline timeline={timeline} itemStatus="shipped" />
         );
 
-        // Placed -> Shipped and Shipped -> Delivered segments: completed, both green
-        // Wait: only Placed->Shipped is fully completed (both ends have dates).
-        // Shipped -> Delivered connector reflects the "Delivered" step's own
-        // completed state, which is false (no date yet, only "in progress").
         const greenConnectors = container.querySelectorAll(
             ".bg-green-500.h-0\\.5"
         );
+
         const grayConnectors = container.querySelectorAll(
-            ".bg-gray-300.h-0\\.5"
+            ".bg-gray-200.h-0\\.5"
         );
 
-        expect(greenConnectors).toHaveLength(2);
-        expect(grayConnectors).toHaveLength(1);
+        expect(greenConnectors).toHaveLength(1);
+        expect(grayConnectors).toHaveLength(2);
     });
 
     it("renders return date when provided", () => {
@@ -100,7 +125,7 @@ describe("OrderTimeline", () => {
         );
 
         // Delivered -> In progress (current step), Returned -> Pending
-        expect(screen.getByText("In progress")).toBeInTheDocument();
+        expect(screen.getByText("In Progress")).toBeInTheDocument();
         expect(screen.getByText("Pending")).toBeInTheDocument();
     });
 
