@@ -5,22 +5,36 @@ import OrderTimeline from "../components/OrderTimeline";
 const timeline = {
     orderCreated: "2026-07-31T10:00:00.000Z",
     shippedDate: "2026-08-01T10:00:00.000Z",
+    outForDeliveryDate: null,
     deliveredDate: null,
     returnDate: null,
 };
 
 describe("OrderTimeline", () => {
     it("renders all timeline labels", () => {
-        render(<OrderTimeline timeline={timeline} itemStatus="shipped" />);
+        render(
+            <OrderTimeline
+                timeline={timeline}
+                itemStatus="shipped"
+            />
+        );
 
         expect(screen.getByText("Placed")).toBeInTheDocument();
         expect(screen.getByText("Shipped")).toBeInTheDocument();
+        expect(
+            screen.getByText("Out for Delivery")
+        ).toBeInTheDocument();
         expect(screen.getByText("Delivered")).toBeInTheDocument();
         expect(screen.getByText("Returned")).toBeInTheDocument();
     });
 
     it("renders formatted dates for completed steps", () => {
-        render(<OrderTimeline timeline={timeline} itemStatus="shipped" />);
+        render(
+            <OrderTimeline
+                timeline={timeline}
+                itemStatus="shipped"
+            />
+        );
 
         expect(
             screen.getByText("July 31, 2026")
@@ -31,69 +45,90 @@ describe("OrderTimeline", () => {
         ).toBeInTheDocument();
     });
 
-    it("shows In Progress for the current step and Pending for future steps", () => {
-        render(<OrderTimeline timeline={timeline} itemStatus="shipped" />);
+    it("shows Out for Delivery as the current step after shipping", () => {
+        render(
+            <OrderTimeline
+                timeline={timeline}
+                itemStatus="shipped"
+            />
+        );
 
-        expect(screen.getByText(/in progress/i)).toBeInTheDocument();
-        expect(screen.getByText("Pending")).toBeInTheDocument();
+        expect(
+            screen.getByText("Out for Delivery")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("In Progress")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getAllByText("Pending")
+        ).toHaveLength(2);
     });
 
     it("renders connector lines colored by completion state", () => {
         const { container } = render(
-            <OrderTimeline timeline={timeline} itemStatus="shipped" />
+            <OrderTimeline
+                timeline={timeline}
+                itemStatus="shipped"
+            />
         );
 
         const greenConnectors =
-            container.querySelectorAll(".bg-green-500.h-0\\.5");
+            container.querySelectorAll(
+                ".bg-green-500.h-0\\.5"
+            );
 
         const grayConnectors =
-            container.querySelectorAll(".bg-gray-200.h-0\\.5");
+            container.querySelectorAll(
+                ".bg-gray-200.h-0\\.5"
+            );
 
+        // Placed -> Shipped is completed
         expect(greenConnectors).toHaveLength(1);
-        expect(grayConnectors).toHaveLength(2);
+
+        // Shipped -> Out for Delivery
+        // Out for Delivery -> Delivered
+        // Delivered -> Returned
+        expect(grayConnectors).toHaveLength(3);
     });
 
     it("renders Pending when returnDate is omitted", () => {
         render(
             <OrderTimeline
                 timeline={{
-                    orderCreated: "2026-07-31T10:00:00.000Z",
-                    shippedDate: "2026-08-01T10:00:00.000Z",
+                    orderCreated:
+                        "2026-07-31T10:00:00.000Z",
+                    shippedDate:
+                        "2026-08-01T10:00:00.000Z",
+                    outForDeliveryDate: null,
                     deliveredDate: null,
                 }}
                 itemStatus="shipped"
             />
         );
 
-        expect(screen.getByText(/in progress/i)).toBeInTheDocument();
-        expect(screen.getByText("Pending")).toBeInTheDocument();
+        expect(
+            screen.getByText("In Progress")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getAllByText("Pending")
+        ).toHaveLength(2);
     });
 
-    it("renders four timeline circles", () => {
+    it("renders five timeline circles", () => {
         const { container } = render(
-            <OrderTimeline timeline={timeline} itemStatus="shipped" />
+            <OrderTimeline
+                timeline={timeline}
+                itemStatus="shipped"
+            />
         );
 
-        const circles = container.querySelectorAll(".rounded-full");
+        const circles =
+            container.querySelectorAll(".rounded-full");
 
-        expect(circles).toHaveLength(4);
-    });
-
-    it("renders connector lines colored by completion state", () => {
-        const { container } = render(
-            <OrderTimeline timeline={timeline} itemStatus="shipped" />
-        );
-
-        const greenConnectors = container.querySelectorAll(
-            ".bg-green-500.h-0\\.5"
-        );
-
-        const grayConnectors = container.querySelectorAll(
-            ".bg-gray-200.h-0\\.5"
-        );
-
-        expect(greenConnectors).toHaveLength(1);
-        expect(grayConnectors).toHaveLength(2);
+        expect(circles).toHaveLength(5);
     });
 
     it("renders return date when provided", () => {
@@ -101,7 +136,8 @@ describe("OrderTimeline", () => {
             <OrderTimeline
                 timeline={{
                     ...timeline,
-                    returnDate: "2026-08-10T10:00:00.000Z",
+                    returnDate:
+                        "2026-08-10T10:00:00.000Z",
                 }}
                 itemStatus="returned"
             />
@@ -112,27 +148,49 @@ describe("OrderTimeline", () => {
         ).toBeInTheDocument();
     });
 
-    it("renders Pending when returnDate is omitted", () => {
+    it("shows the cancelled banner and skips the step timeline entirely", () => {
         render(
             <OrderTimeline
-                timeline={{
-                    orderCreated: "2026-07-31T10:00:00.000Z",
-                    shippedDate: "2026-08-01T10:00:00.000Z",
-                    deliveredDate: null,
-                }}
-                itemStatus="shipped"
+                timeline={timeline}
+                itemStatus="cancelled"
             />
         );
 
-        // Delivered -> In progress (current step), Returned -> Pending
-        expect(screen.getByText("In Progress")).toBeInTheDocument();
-        expect(screen.getByText("Pending")).toBeInTheDocument();
+        expect(
+            screen.getByText(/order cancelled/i)
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByText("Placed")
+        ).not.toBeInTheDocument();
+
+        expect(
+            screen.queryByText("Out for Delivery")
+        ).not.toBeInTheDocument();
     });
 
-    it("shows the cancelled banner and skips the step timeline entirely", () => {
-        render(<OrderTimeline timeline={timeline} itemStatus="cancelled" />);
+    it("shows Out for Delivery when the backend status is out_for_delivery", () => {
+        render(
+            <OrderTimeline
+                timeline={{
+                    ...timeline,
+                    outForDeliveryDate:
+                        "2026-08-02T10:00:00.000Z",
+                }}
+                itemStatus="out_for_delivery"
+            />
+        );
 
-        expect(screen.getByText(/order cancelled/i)).toBeInTheDocument();
-        expect(screen.queryByText("Placed")).not.toBeInTheDocument();
+        expect(
+            screen.getByText("Out for Delivery")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("August 2, 2026")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Delivered")
+        ).toBeInTheDocument();
     });
 });

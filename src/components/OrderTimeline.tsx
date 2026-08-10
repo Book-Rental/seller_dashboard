@@ -4,6 +4,7 @@ type Props = {
     timeline: {
         orderCreated: string;
         shippedDate: string | null;
+        outForDeliveryDate: string | null;
         deliveredDate: string | null;
         returnDate?: string | null;
     };
@@ -15,6 +16,7 @@ type StepKey = keyof Props["timeline"];
 const steps: { key: StepKey; label: string }[] = [
     { key: "orderCreated", label: "Placed" },
     { key: "shippedDate", label: "Shipped" },
+    { key: "outForDeliveryDate", label: "Out for Delivery" },
     { key: "deliveredDate", label: "Delivered" },
     { key: "returnDate", label: "Returned" },
 ];
@@ -23,9 +25,10 @@ const STATUS_STEP_INDEX: Record<string, number> = {
     pending: -1,
     confirmed: 0,
     shipped: 1,
-    delivered: 2,
-    return_requested: 2,
-    returned: 3,
+    out_for_delivery: 2,
+    delivered: 3,
+    return_requested: 3,
+    returned: 4,
 };
 
 const isTerminalNegative = (status: string) =>
@@ -74,9 +77,8 @@ const OrderTimeline = ({ timeline, itemStatus }: Props) => {
                         return (
                             <div
                                 key={index}
-                                className={`absolute top-0 h-0.5 transition-colors duration-300 ${
-                                    filled ? "bg-green-500" : "bg-gray-200"
-                                }`}
+                                className={`absolute top-0 h-0.5 transition-colors duration-300 ${filled ? "bg-green-500" : "bg-gray-200"
+                                    }`}
                                 style={{ left: `${left}%`, width: `${width}%` }}
                             />
                         );
@@ -107,33 +109,30 @@ const OrderTimeline = ({ timeline, itemStatus }: Props) => {
                         return (
                             <div key={step.key} className="flex flex-col items-center px-1">
                                 <div
-                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-                                        completed
-                                            ? "border-green-500 bg-green-500"
-                                            : isCurrent
+                                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-300 ${completed
+                                        ? "border-green-500 bg-green-500"
+                                        : isCurrent
                                             ? "border-blue-500 bg-blue-500 ring-4 ring-blue-100 animate-pulse"
                                             : "border-gray-300 bg-white"
-                                    }`}
+                                        }`}
                                 >
                                     {completed && <BiCheck size={12} className="text-white" />}
                                 </div>
 
                                 <p
-                                    className={`mt-3 text-center text-sm font-semibold ${
-                                        completed || isCurrent ? "text-gray-900" : "text-gray-400"
-                                    }`}
+                                    className={`mt-3 text-center text-sm font-semibold ${completed || isCurrent ? "text-gray-900" : "text-gray-400"
+                                        }`}
                                 >
                                     {step.label}
                                 </p>
 
                                 <p
-                                    className={`mt-0.5 text-center text-xs ${
-                                        isCurrent
-                                            ? "font-medium text-blue-600"
-                                            : completed
+                                    className={`mt-0.5 text-center text-xs ${isCurrent
+                                        ? "font-medium text-blue-600"
+                                        : completed
                                             ? "text-gray-500"
                                             : "text-gray-400"
-                                    }`}
+                                        }`}
                                 >
                                     {statusText}
                                 </p>
