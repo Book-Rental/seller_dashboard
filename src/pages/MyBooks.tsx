@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
     Pagination,
     Rb_Button,
@@ -20,6 +20,7 @@ const MyBooks = () => {
     const [page, setPage] = useState(1);
     const [availability, setAvailability] = useState("");
     const [categoryName, setCategoryName] = useState("");
+    const [auctionStatus, setAuctionStatus] = useState<Record<string, boolean>>({});
 
     const { data, isLoading } = useSellerBooks(
         sellerId,
@@ -38,6 +39,25 @@ const MyBooks = () => {
         ),
     ];
 
+    useEffect(() => {
+        if (books.length) {
+            const status: Record<string, boolean> = {};
+
+            books.forEach((book) => {
+                status[book._id] = false; // default disabled
+            });
+
+            setAuctionStatus(status);
+        }
+    }, [books]);
+
+    const toggleAuction = (bookId: string) => {
+        setAuctionStatus((prev) => ({
+            ...prev,
+            [bookId]: !prev[bookId],
+        }));
+    };
+
     const meta = data?.data?.books?.meta;
     const totalPages = meta?.totalPages ?? 0;
 
@@ -51,94 +71,98 @@ const MyBooks = () => {
     }, [books, availability]);
 
     return (
-         <SellerLayout currentPage="seller-my-books">
-        <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-            <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                    <Rb_Text
-                        variant="h1"
-                        className="text-2xl font-bold sm:text-3xl"
-                    >
-                        My Books
-                    </Rb_Text>
-
-                    <Rb_Text
-                        variant="p"
-                        className="mt-1 text-sm text-gray-500 sm:text-base"
-                    >
-                        Total Books: {meta?.totalRecords ?? 0}
-                    </Rb_Text>
-                </div>
-
-                <Rb_Button
-                    onClick={redirectToAddBook}
-                    className="w-full sm:w-auto"
-                >
-                    + Add Book
-                </Rb_Button>
-            </div>
-
-            {/* Filters */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row">
-                <select
-                    value={categoryName}
-                    onChange={(e) => {
-                        setPage(1);
-                        setCategoryName(e.target.value);
-                    }}
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:w-56"
-                >
-                    <option value="">All Categories</option>
-
-                    {categories.map((category) => (
-                        <option
-                            key={category}
-                            value={category}
+        <SellerLayout currentPage="seller-my-books">
+            <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+                <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <Rb_Text
+                            variant="h1"
+                            className="text-2xl font-bold sm:text-3xl"
                         >
-                            {category}
-                        </option>
-                    ))}
-                </select>
+                            My Books
+                        </Rb_Text>
 
-                <select
-                    value={availability}
-                    onChange={(e) =>
-                        setAvailability(e.target.value)
-                    }
-                    className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:w-48"
-                >
-                    <option value="">Availability</option>
-                    <option value="available">
-                        Available
-                    </option>
-                    <option value="unavailable">
-                        Unavailable
-                    </option>
-                </select>
-            </div>
+                        <Rb_Text
+                            variant="p"
+                            className="mt-1 text-sm text-gray-500 sm:text-base"
+                        >
+                            Total Books: {meta?.totalRecords ?? 0}
+                        </Rb_Text>
+                    </div>
 
-            {isLoading ? (
-                <div className="flex justify-center py-10">
-                    <Rb_LoadingSpinner text="Loading books..." />
+                    <Rb_Button
+                        onClick={redirectToAddBook}
+                        className="w-full sm:w-auto"
+                    >
+                        + Add Book
+                    </Rb_Button>
                 </div>
-            ) : (
-                <>
-                    <BookTable books={displayedBooks} />
 
-                    {totalPages > 1 && (
-                        <div className="mt-6 flex justify-center sm:mt-8">
-                            <Pagination
-                                currentPage={page}
-                                totalPages={totalPages}
-                                siblingCount={1}
-                                disabled={isLoading}
-                                onPageChange={setPage}
-                            />
-                        </div>
-                    )}
-                </>
-            )}
-        </div>
+                {/* Filters */}
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+                    <select
+                        value={categoryName}
+                        onChange={(e) => {
+                            setPage(1);
+                            setCategoryName(e.target.value);
+                        }}
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:w-56"
+                    >
+                        <option value="">All Categories</option>
+
+                        {categories.map((category) => (
+                            <option
+                                key={category}
+                                value={category}
+                            >
+                                {category}
+                            </option>
+                        ))}
+                    </select>
+
+                    <select
+                        value={availability}
+                        onChange={(e) =>
+                            setAvailability(e.target.value)
+                        }
+                        className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:w-48"
+                    >
+                        <option value="">Availability</option>
+                        <option value="available">
+                            Available
+                        </option>
+                        <option value="unavailable">
+                            Unavailable
+                        </option>
+                    </select>
+                </div>
+
+                {isLoading ? (
+                    <div className="flex justify-center py-10">
+                        <Rb_LoadingSpinner text="Loading books..." />
+                    </div>
+                ) : (
+                    <>
+                        <BookTable
+                            books={displayedBooks}
+                            auctionStatus={auctionStatus}
+                            onToggleAuction={toggleAuction}
+                        />
+
+                        {totalPages > 1 && (
+                            <div className="mt-6 flex justify-center sm:mt-8">
+                                <Pagination
+                                    currentPage={page}
+                                    totalPages={totalPages}
+                                    siblingCount={1}
+                                    disabled={isLoading}
+                                    onPageChange={setPage}
+                                />
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
         </SellerLayout>
     );
 };

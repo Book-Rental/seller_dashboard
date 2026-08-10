@@ -5,6 +5,7 @@ import OrderTimeline from "../components/OrderTimeline";
 const timeline = {
     orderCreated: "2026-07-31T10:00:00.000Z",
     shippedDate: "2026-08-01T10:00:00.000Z",
+    outForDeliveryDate: null,
     deliveredDate: null,
     returnDate: null,
 };
@@ -59,6 +60,7 @@ describe("OrderTimeline", () => {
                 timeline={{
                     orderCreated: "2026-07-31T10:00:00.000Z",
                     shippedDate: "2026-08-01T10:00:00.000Z",
+                    outForDeliveryDate: null,
                     deliveredDate: null,
                 }}
                 itemStatus="shipped"
@@ -118,6 +120,7 @@ describe("OrderTimeline", () => {
                 timeline={{
                     orderCreated: "2026-07-31T10:00:00.000Z",
                     shippedDate: "2026-08-01T10:00:00.000Z",
+                    outForDeliveryDate: null,
                     deliveredDate: null,
                 }}
                 itemStatus="shipped"

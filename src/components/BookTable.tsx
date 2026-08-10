@@ -8,13 +8,18 @@ import { showToast } from "../utils/toast";
 import { redirectToEditBook } from "../utils/sellerNavigation";
 import { MdOutlineDelete } from "react-icons/md";
 import { TbEdit } from "react-icons/tb";
+import { FaToggleOn, FaToggleOff } from "react-icons/fa";
 
 type Props = {
     books: SellerBook[];
+    auctionStatus?: Record<string, boolean>;
+    onToggleAuction?: (bookId: string) => void;
 };
 
 const BookTable = ({
     books,
+    auctionStatus,
+    onToggleAuction,
 }: Props) => {
 
     const [selectedBook, setSelectedBook] =
@@ -71,9 +76,12 @@ const BookTable = ({
                             Availability
                         </th>
 
+                        <th className="px-3 py-3 text-left text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">Auction</th>
+
                         <th className="px-3 py-3 text-center text-sm font-semibold text-gray-700 sm:px-6 sm:py-4">
                             Action
                         </th>
+
                     </tr>
                 </thead>
 
@@ -82,7 +90,7 @@ const BookTable = ({
                     {books.length === 0 ? (
                         <tr>
                             <td
-                                colSpan={6}
+                                colSpan={7}
                                 className="py-10 text-center text-gray-500"
                             >
                                 No Books Found
@@ -135,6 +143,25 @@ const BookTable = ({
                                                 book.availabilityStatus
                                             }
                                         />
+                                    </td>
+
+                                    <td className="px-4 py-4 text-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => onToggleAuction?.(book._id)}
+                                            className="text-3xl"
+                                            aria-label={
+                                                auctionStatus?.[book._id]
+                                                    ? "Disable auction"
+                                                    : "Enable auction"
+                                            }
+                                        >
+                                            {auctionStatus?.[book._id] ? (
+                                                <FaToggleOn className="text-green-500" />
+                                            ) : (
+                                                <FaToggleOff className="text-gray-400" />
+                                            )}
+                                        </button>
                                     </td>
 
                                     <td className="px-6 py-4 text-center">
