@@ -170,6 +170,7 @@ const BookTable = ({
                                                 variant="secondary"
                                                 size="sm"
                                                 className="whitespace-nowrap"
+                                                aria-label="Edit book"
                                                 onClick={() =>
                                                     redirectToEditBook(book._id)
                                                 }
@@ -181,6 +182,7 @@ const BookTable = ({
                                                 variant="secondary"
                                                 size="sm"
                                                 className="whitespace-nowrap border-red-500 text-red-600 hover:bg-red-50"
+                                                aria-label="Delete book"
                                                 onClick={() =>
                                                     setSelectedBook(book)
                                                 }
