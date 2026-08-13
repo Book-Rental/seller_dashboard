@@ -2,28 +2,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { markReadyForPickup } from "../services/shipmentService";
 
 export const useMarkReadyForPickup = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: (orderItemId: string) =>
-            markReadyForPickup(orderItemId),
+  return useMutation({
+    mutationFn: (shipmentId: string) =>
+      markReadyForPickup(shipmentId),
 
-        onSuccess: (_, orderItemId) => {
-            queryClient.invalidateQueries({
-                queryKey: ["shipment", orderItemId],
-            });
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["orders"],
+      });
 
-            queryClient.invalidateQueries({
-                queryKey: ["order-details", orderItemId],
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: ["orders"],
-            });
-
-            queryClient.invalidateQueries({
-                queryKey: ["recent-orders"],
-            });
-        },
-    });
+      queryClient.invalidateQueries({
+        queryKey: ["recent-orders"],
+      });
+    },
+  });
 };

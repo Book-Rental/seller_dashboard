@@ -51,13 +51,35 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
     };
 
     const { mutate: mutateReadyForPickup, isPending: isMarkingReady } = useMarkReadyForPickup();
+  const handleReadyForPickup = () => {
+    console.log("Current order:", order);
 
-    const handleReadyForPickup = () => {
-        mutateReadyForPickup(orderItemId);
-    };
-    const { data: shipmentData } = useShipmentDetails(orderItemId, {
+    const forwardShipment = order?.shipementDetails?.find(
+        (shipment:any) => shipment?.shipmentType === "Forward"
+    );
+
+    console.log("Forward shipment:", forwardShipment);
+
+    const shipmentId = forwardShipment?.shipmentId;
+
+    console.log("Passing shipmentId:", shipmentId);
+
+    if (!shipmentId) {
+        console.error("Shipment ID not found");
+        return;
+    }
+
+    mutateReadyForPickup(shipmentId);
+};
+const forwardShipment = order?.shipementDetails?.find(
+    (shipment:any) => shipment.shipmentType === "Forward"
+);
+
+const awbNumber = forwardShipment?.awbNumber;
+    
+    const { data: shipmentData } = useShipmentDetails(awbNumber, {
         // Only fetch if orderItemId exists AND the status is confirmed
-        enabled: !!orderItemId && order?.itemStatus === 'confirmed',
+        enabled: !!awbNumber && order?.itemStatus === 'shipped',
     });
 
     const shipment = shipmentData?.data;
@@ -556,8 +578,9 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
                                         <div className="mt-6 space-y-3">
                                             <Rb_Button
                                                 onClick={handleReadyForPickup}
-                                                disabled={isMarkingReady}
+                                               disabled={isMarkingReady || !order?.shipementDetails?.length}
                                                 className="w-full"
+                                                
                                             >
                                                 {isMarkingReady
                                                     ? "Marking as Ready..."
@@ -607,7 +630,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
                                         </div>
                                     </div>
                                 )}
-                                {shipment?.journey?.length > 0 && (
+                                {shipment?.journeyDetails?.length > 0 && (
                                     <div className="mt-4 rounded-lg bg-white p-4 shadow">
                                         <h3 className="mb-3 font-semibold">
                                             Shipment Journey
@@ -615,7 +638,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
 
                                         <ProgressTimeline
                                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                            timeline={shipment.journey.map((item: any) => ({
+                                            timeline={shipment.journeyDetails.map((item: any) => ({
                                                 label: item.event,
                                                 date: item.eventAt,
                                                 description: item.status,
