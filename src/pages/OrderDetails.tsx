@@ -55,6 +55,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
     console.log("Current order:", order);
 
     const forwardShipment = order?.shipementDetails?.find(
+        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
         (shipment:any) => shipment?.shipmentType === "Forward"
     );
 
@@ -72,6 +73,7 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
     mutateReadyForPickup(shipmentId);
 };
 const forwardShipment = order?.shipementDetails?.find(
+    // eslint-disable-next-line  @typescript-eslint/no-explicit-any
     (shipment:any) => shipment.shipmentType === "Forward"
 );
 
