@@ -2,13 +2,13 @@ import { useQuery } from "@tanstack/react-query";
 import { getShipmentDetails } from "../services/orderService";
 
 export const useShipmentDetails = (
-    orderItemId: string,
+    awbNumber: string,
     options = {}
 ) => {
     return useQuery({
-        queryKey: ["shipment", orderItemId],
+        queryKey: ["shipment", awbNumber],
         queryFn: () =>
-            getShipmentDetails(orderItemId),
+            getShipmentDetails(awbNumber),
         ...options,
 
     });

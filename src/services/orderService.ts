@@ -72,10 +72,10 @@ export const updateOrderStatus = async (
 };
 
 export const getShipmentDetails = async (
-    orderItemId: string
+    awbNumber: string
 ) => {
     const response = await fetch(
-        `${ADMIN_URL}/api/shipment/order-item/${orderItemId}`,
+        `${ADMIN_URL}/api/shipment/shipmentStatuse/${awbNumber}`,
         {
             credentials: "include",
         }
