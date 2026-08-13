@@ -51,26 +51,19 @@ const OrderDetails = ({ orderItemId }: OrderDetailsProps) => {
     };
 
     const { mutate: mutateReadyForPickup, isPending: isMarkingReady } = useMarkReadyForPickup();
-  const handleReadyForPickup = () => {
-    console.log("Current order:", order);
-
-    const forwardShipment = order?.shipementDetails?.find(
-        // eslint-disable-next-line  @typescript-eslint/no-explicit-any
-        (shipment:any) => shipment?.shipmentType === "Forward"
-    );
-
-    console.log("Forward shipment:", forwardShipment);
-
+const handleReadyForPickup = () => {
     const shipmentId = forwardShipment?.shipmentId;
-
-    console.log("Passing shipmentId:", shipmentId);
 
     if (!shipmentId) {
         console.error("Shipment ID not found");
         return;
     }
 
-    mutateReadyForPickup(shipmentId);
+    mutateReadyForPickup(shipmentId, {
+        onSuccess: async () => {
+            await refetchShipment();
+        },
+    });
 };
 const forwardShipment = order?.shipementDetails?.find(
     // eslint-disable-next-line  @typescript-eslint/no-explicit-any
@@ -79,10 +72,15 @@ const forwardShipment = order?.shipementDetails?.find(
 
 const awbNumber = forwardShipment?.awbNumber;
     
-    const { data: shipmentData } = useShipmentDetails(awbNumber, {
-        // Only fetch if orderItemId exists AND the status is confirmed
-        enabled: !!awbNumber && order?.itemStatus === 'shipped',
-    });
+ const {
+    data: shipmentData,
+    refetch: refetchShipment,
+} = useShipmentDetails(awbNumber, {
+    enabled:
+        !!awbNumber &&
+        (order?.itemStatus === "confirmed" ||
+            order?.itemStatus === "shipped"),
+});
 
     const shipment = shipmentData?.data;
     const handleReject = () => {
@@ -623,7 +621,7 @@ const awbNumber = forwardShipment?.awbNumber;
                                                         <div>
                                                             <p className="text-xs text-gray-500">Contact Number</p>
                                                             <p className="font-medium text-gray-800">
-                                                                {shipment.pickupAgent.phoneNumber}
+                                                                {shipment.pickupAgent.phone}
                                                             </p>
                                                         </div>
                                                     </div>
