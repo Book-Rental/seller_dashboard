@@ -1,37 +1,69 @@
-import { Flag } from "../App";
+import { SellerBook } from "../types/book";
 
-let navigate: ((page: Flag, data?: string) => void) | null = null;
+export type SellerNavigationCallback = (
+    page:
+        | "dashboard"
+        | "seller-orders"
+        | "seller-order-details"
+        | "seller-my-books"
+        | "seller-add-book"
+        | "seller-edit-book"
+        | "seller-auctioned-books"
+        | "seller-book-details",
+    data?: string | SellerBook
+) => void;
+
+let navigationCallback: SellerNavigationCallback | null = null;
 
 export const registerSellerNavigation = (
-    handler: (page: Flag, data?: string) => void
+    callback: SellerNavigationCallback
 ) => {
-    navigate = handler;
+    navigationCallback = callback;
 };
 
 export const redirectToDashboard = () => {
-    navigate?.("dashboard");
+    navigationCallback?.("dashboard");
 };
 
 export const redirectToOrders = () => {
-    navigate?.("seller-orders");
+    navigationCallback?.("seller-orders");
 };
 
 export const redirectToMyBooks = () => {
-    navigate?.("seller-my-books");
+    navigationCallback?.("seller-my-books");
 };
 
 export const redirectToAddBook = () => {
-    navigate?.("seller-add-book");
+    navigationCallback?.("seller-add-book");
+};
+
+export const redirectToAuctionedBooks = () => {
+    navigationCallback?.("seller-auctioned-books");
 };
 
 export const redirectToOrderDetails = (
     orderItemId: string
 ) => {
-    navigate?.("seller-order-details", orderItemId);
+    navigationCallback?.(
+        "seller-order-details",
+        orderItemId
+    );
 };
 
 export const redirectToEditBook = (
     bookId: string
 ) => {
-    navigate?.("seller-edit-book", bookId);
+    navigationCallback?.(
+        "seller-edit-book",
+        bookId
+    );
+};
+
+export const redirectToBookDetails = (
+    book: SellerBook
+) => {
+    navigationCallback?.(
+        "seller-book-details",
+        book
+    );
 };

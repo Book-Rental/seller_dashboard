@@ -25,6 +25,7 @@ export interface SellerBook {
     availabilityStatus: string;
     isAvailable: boolean;
     isActive: boolean;
+    isAuction?: boolean;
     createdAt: string;
     updatedAt: string;
 }
