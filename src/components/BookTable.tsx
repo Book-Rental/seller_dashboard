@@ -1,11 +1,16 @@
 import { Rb_Button } from "@rentbook/rentbook-ui-lib";
 import { SellerBook } from "../types/book";
 import AvailabilityBadge from "./AvailabilityBadge";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import DeleteBookModal from "./DeleteBookModal";
+import AuctionDetailsModal from "./AuctionDetailsModal";
 import { useDeleteBook } from "../hooks/useDeleteBook";
+import { useAuctionBooks } from "../hooks/useAuctionBooks";
 import { showToast } from "../utils/toast";
-import { redirectToEditBook } from "../utils/sellerNavigation";
+import {
+    redirectToBookDetails,
+    redirectToEditBook,
+} from "../utils/sellerNavigation";
 import { MdOutlineDelete } from "react-icons/md";
 import { TbEdit } from "react-icons/tb";
 import { FaToggleOn, FaToggleOff } from "react-icons/fa";
@@ -25,11 +30,32 @@ const BookTable = ({
     const [selectedBook, setSelectedBook] =
         useState<SellerBook | null>(null);
 
+    const [auctionBook, setAuctionBook] =
+        useState<SellerBook | null>(null);
+
     const { mutate: deleteBook, isPending } =
         useDeleteBook();
 
+    const {
+        data: auctionBooks = [],
+        isLoading: isAuctionBooksLoading,
+        isError: isAuctionBooksError,
+    } = useAuctionBooks();
+
+    const auctionBookIds = useMemo<Set<string>>(() => {
+        return new Set(
+            auctionBooks
+                .map((book) => book._id)
+                .filter(
+                    (id): id is string => Boolean(id)
+                )
+        );
+    }, [auctionBooks]);
+
     const handleDelete = () => {
-        if (!selectedBook) return;
+        if (!selectedBook) {
+            return;
+        }
 
         deleteBook(selectedBook._id, {
             onSuccess: () => {
@@ -50,6 +76,28 @@ const BookTable = ({
             },
         });
     };
+
+    const handleAuctionConfirm = (details: {
+        startingBid: string;
+        buyNowPrice: string;
+        duration: string;
+        startDate: string;
+    }) => {
+        if (!auctionBook) {
+            return;
+        }
+
+        console.log("Auction Details:", {
+            bookId: auctionBook._id,
+            bookName: auctionBook.name,
+            ...details,
+        });
+
+        onToggleAuction?.(auctionBook._id);
+
+        setAuctionBook(null);
+    };
+
     return (
         <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
             <table className="min-w-[900px] w-full">
@@ -98,6 +146,14 @@ const BookTable = ({
                         </tr>
                     ) : (
                         books.map((book) => {
+                            const isAuctionEnabled =
+                                book.isAuction === true ||
+                                auctionBookIds.has(
+                                    book._id
+                                ) ||
+                                auctionStatus?.[
+                                    book._id
+                                ] === true;
 
                             return (
                                 <tr
@@ -114,12 +170,20 @@ const BookTable = ({
                                                 className="h-14 w-10 rounded-md border object-cover sm:h-16 sm:w-12"
                                             />
 
-                                            <span className="line-clamp-2 text-sm font-medium sm:text-base">
-                                                {book.name}
-                                            </span>
-
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    redirectToBookDetails(
+                                                        book
+                                                    )
+                                                }
+                                                className="line-clamp-2 text-left text-sm font-medium text-blue-600 hover:underline sm:text-base"
+                                            >
+                                                {
+                                                    book.name
+                                                }
+                                            </button>
                                         </div>
-
                                     </td>
 
                                     <td className="px-3 py-3 text-sm capitalize sm:px-6 sm:py-4">
@@ -148,15 +212,33 @@ const BookTable = ({
                                     <td className="px-4 py-4 text-center">
                                         <button
                                             type="button"
-                                            onClick={() => onToggleAuction?.(book._id)}
-                                            className="text-3xl"
+                                            disabled={
+                                                isAuctionBooksLoading ||
+                                                isAuctionBooksError
+                                            }
+                                            onClick={() => {
+                                                if (
+                                                    isAuctionEnabled
+                                                ) {
+                                                    showToast(
+                                                        "This book is already available for auction",
+                                                        "error"
+                                                    );
+
+                                                    return;
+                                                }
+                                                setAuctionBook(
+                                                    book
+                                                );
+                                            }}
+                                            className="text-3xl disabled:cursor-not-allowed disabled:opacity-50"
                                             aria-label={
-                                                auctionStatus?.[book._id]
-                                                    ? "Disable auction"
+                                                isAuctionEnabled
+                                                    ? "Book already available for auction"
                                                     : "Enable auction"
                                             }
                                         >
-                                            {auctionStatus?.[book._id] ? (
+                                            {isAuctionEnabled ? (
                                                 <FaToggleOn className="text-green-500" />
                                             ) : (
                                                 <FaToggleOff className="text-gray-400" />
@@ -207,6 +289,18 @@ const BookTable = ({
                 loading={isPending}
                 onClose={() => setSelectedBook(null)}
                 onConfirm={handleDelete}
+            />
+
+            {/* Auction Details Modal */}
+            <AuctionDetailsModal
+                isOpen={!!auctionBook}
+                book={auctionBook}
+                onClose={() =>
+                    setAuctionBook(null)
+                }
+                onConfirm={
+                    handleAuctionConfirm
+                }
             />
         </div>
     );

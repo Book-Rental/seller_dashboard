@@ -1,21 +1,27 @@
-import { redirectToOrders, redirectToMyBooks, redirectToAddBook, redirectToDashboard } from "../utils/sellerNavigation";
-
+import {
+    redirectToOrders,
+    redirectToMyBooks,
+    redirectToAddBook,
+    redirectToDashboard,
+    redirectToAuctionedBooks,
+} from "../utils/sellerNavigation";
 
 type SellerSidebarProps = {
     currentPage:
-    | "dashboard"
-    | "seller-orders"
-    | "seller-order-details"
-    | "seller-my-books"
-    | "seller-add-book"
-    | "seller-edit-book";
+        | "dashboard"
+        | "seller-orders"
+        | "seller-order-details"
+        | "seller-my-books"
+        | "seller-add-book"
+        | "seller-edit-book"
+        | "seller-auctioned-books";
 };
 
 export default function SellerSidebar({
     currentPage,
 }: SellerSidebarProps) {
     return (
-        <aside className="w-64 border-r bg-white p-4">
+        <aside className="hidden w-64 shrink-0 border-r bg-white p-4 lg:block">
             <h2 className="mb-6 text-xl font-bold">
                 Seller Dashboard
             </h2>
@@ -58,6 +64,20 @@ export default function SellerSidebar({
                 >
                     Add Book
                 </button>
+                <button
+                    onClick={
+                        redirectToAuctionedBooks
+                    }
+                    className={`w-full rounded-md p-3 text-left ${
+                        currentPage ===
+                        "seller-auctioned-books"
+                            ? "bg-blue-600 text-white"
+                            : "hover:bg-gray-100"
+                    }`}
+                >
+                    Auctioned Books
+                </button>
+
             </nav>
         </aside>
     );

@@ -8,7 +8,8 @@ type SellerLayoutProps = {
         | "seller-order-details"
         | "seller-my-books"
         | "seller-add-book"
-        | "seller-edit-book";
+        | "seller-edit-book"
+        | "seller-auctioned-books";
 
     children: ReactNode;
 };
