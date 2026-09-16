@@ -6,11 +6,15 @@ import BookTable from "../components/BookTable";
 const {
     mockDeleteBook,
     mockRedirectToEditBook,
+    mockRedirectToBookDetails,
     mockShowToast,
+    mockUseAuctionBooks,
 } = vi.hoisted(() => ({
     mockDeleteBook: vi.fn(),
     mockRedirectToEditBook: vi.fn(),
+    mockRedirectToBookDetails: vi.fn(),
     mockShowToast: vi.fn(),
+    mockUseAuctionBooks: vi.fn(),
 }));
 
 vi.mock("@rentbook/rentbook-ui-lib", () => ({
@@ -18,9 +22,7 @@ vi.mock("@rentbook/rentbook-ui-lib", () => ({
         children,
         onClick,
         disabled,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ...props
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }: any) => (
         <button
             type="button"
@@ -47,7 +49,6 @@ vi.mock("../components/DeleteBookModal", () => ({
         bookName,
         onClose,
         onConfirm,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }: any) =>
         open ? (
             <div data-testid="delete-modal">
@@ -70,11 +71,47 @@ vi.mock("../components/DeleteBookModal", () => ({
         ) : null,
 }));
 
+vi.mock("../components/AuctionDetailsModal", () => ({
+    default: ({
+        isOpen,
+        onClose,
+        onConfirm,
+    }: any) =>
+        isOpen ? (
+            <div data-testid="auction-details-modal">
+                <button
+                    type="button"
+                    onClick={onClose}
+                >
+                    Close Auction Modal
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() =>
+                        onConfirm({
+                            startingBid: "100",
+                            buyNowPrice: "500",
+                            duration: "24",
+                            startDate: "2026-09-16",
+                        })
+                    }
+                >
+                    Confirm Auction
+                </button>
+            </div>
+        ) : null,
+}));
+
 vi.mock("../hooks/useDeleteBook", () => ({
     useDeleteBook: () => ({
         mutate: mockDeleteBook,
         isPending: false,
     }),
+}));
+
+vi.mock("../hooks/useAuctionBooks", () => ({
+    useAuctionBooks: mockUseAuctionBooks,
 }));
 
 vi.mock("../utils/toast", () => ({
@@ -83,6 +120,7 @@ vi.mock("../utils/toast", () => ({
 
 vi.mock("../utils/sellerNavigation", () => ({
     redirectToEditBook: mockRedirectToEditBook,
+    redirectToBookDetails: mockRedirectToBookDetails,
 }));
 
 const books = [
@@ -123,25 +161,23 @@ const books = [
 describe("BookTable", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+
+        mockUseAuctionBooks.mockReturnValue({
+            data: [],
+            isLoading: false,
+            isError: false,
+        });
     });
 
     it("renders table headers", () => {
         render(<BookTable books={books} />);
 
         expect(screen.getByText("Book")).toBeInTheDocument();
-        expect(
-            screen.getByText("Category")
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText("Price / Week")
-        ).toBeInTheDocument();
+        expect(screen.getByText("Category")).toBeInTheDocument();
+        expect(screen.getByText("Price / Week")).toBeInTheDocument();
         expect(screen.getByText("Stock")).toBeInTheDocument();
-        expect(
-            screen.getByText("Availability")
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText("Auction")
-        ).toBeInTheDocument();
+        expect(screen.getByText("Availability")).toBeInTheDocument();
+        expect(screen.getByText("Auction")).toBeInTheDocument();
         expect(screen.getByText("Action")).toBeInTheDocument();
     });
 
@@ -150,12 +186,8 @@ describe("BookTable", () => {
 
         expect(screen.getByText("₹250")).toBeInTheDocument();
         expect(screen.getByText("5")).toBeInTheDocument();
-        expect(
-            screen.getByText("Atomic Habits")
-        ).toBeInTheDocument();
-        expect(
-            screen.getByText("Self Help")
-        ).toBeInTheDocument();
+        expect(screen.getByText("Atomic Habits")).toBeInTheDocument();
+        expect(screen.getByText("Self Help")).toBeInTheDocument();
     });
 
     it("renders availability badge", () => {
@@ -176,7 +208,31 @@ describe("BookTable", () => {
         ).toBeInTheDocument();
     });
 
-    it("toggles auction from disabled to enabled", async () => {
+    it("opens auction details modal when Enable auction is clicked", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <BookTable
+                books={books}
+                auctionStatus={{
+                    "book-1": false,
+                }}
+                onToggleAuction={vi.fn()}
+            />
+        );
+
+        await user.click(
+            screen.getByRole("button", {
+                name: "Enable auction",
+            })
+        );
+
+        expect(
+            screen.getByTestId("auction-details-modal")
+        ).toBeInTheDocument();
+    });
+
+    it("toggles auction after confirming auction details", async () => {
         const user = userEvent.setup();
         const mockToggleAuction = vi.fn();
 
@@ -196,9 +252,130 @@ describe("BookTable", () => {
             })
         );
 
-        expect(mockToggleAuction).toHaveBeenCalledWith(
-            "book-1"
+        await user.click(
+            screen.getByRole("button", {
+                name: "Confirm Auction",
+            })
         );
+
+        expect(
+            mockToggleAuction
+        ).toHaveBeenCalledWith("book-1");
+    });
+
+    it("closes auction details modal", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <BookTable
+                books={books}
+                auctionStatus={{
+                    "book-1": false,
+                }}
+            />
+        );
+
+        await user.click(
+            screen.getByRole("button", {
+                name: "Enable auction",
+            })
+        );
+
+        expect(
+            screen.getByTestId("auction-details-modal")
+        ).toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole("button", {
+                name: "Close Auction Modal",
+            })
+        );
+
+        expect(
+            screen.queryByTestId("auction-details-modal")
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows error when book is already available for auction", async () => {
+        const user = userEvent.setup();
+
+        render(
+            <BookTable
+                books={books}
+                auctionStatus={{
+                    "book-1": true,
+                }}
+            />
+        );
+
+        await user.click(
+            screen.getByRole("button", {
+                name: "Book already available for auction",
+            })
+        );
+
+        expect(
+            mockShowToast
+        ).toHaveBeenCalledWith(
+            "This book is already available for auction",
+            "error"
+        );
+
+        expect(
+            screen.queryByTestId("auction-details-modal")
+        ).not.toBeInTheDocument();
+    });
+
+    it("shows book as already available when it exists in auction books", () => {
+        mockUseAuctionBooks.mockReturnValue({
+            data: [
+                {
+                    _id: "book-1",
+                },
+            ],
+            isLoading: false,
+            isError: false,
+        });
+
+        render(<BookTable books={books} />);
+
+        expect(
+            screen.getByRole("button", {
+                name: "Book already available for auction",
+            })
+        ).toBeInTheDocument();
+    });
+
+    it("disables auction button while auction books are loading", () => {
+        mockUseAuctionBooks.mockReturnValue({
+            data: [],
+            isLoading: true,
+            isError: false,
+        });
+
+        render(<BookTable books={books} />);
+
+        expect(
+            screen.getByRole("button", {
+                name: "Enable auction",
+            })
+        ).toBeDisabled();
+    });
+
+    it("disables auction button when auction books request fails", () => {
+        mockUseAuctionBooks.mockReturnValue({
+            data: [],
+            isLoading: false,
+            isError: true,
+        });
+
+        render(<BookTable books={books} />);
+
+        expect(
+            screen.getByRole("button", {
+                name: "Enable auction",
+            })
+        ).toBeDisabled();
     });
 
     it("renders auction as enabled when status is true", () => {
@@ -214,7 +391,7 @@ describe("BookTable", () => {
 
         expect(
             screen.getByRole("button", {
-                name: "Disable auction",
+                name: "Book already available for auction",
             })
         ).toBeInTheDocument();
     });
@@ -233,6 +410,22 @@ describe("BookTable", () => {
         expect(
             mockRedirectToEditBook
         ).toHaveBeenCalledWith("book-1");
+    });
+
+    it("calls redirectToBookDetails when book name is clicked", async () => {
+        const user = userEvent.setup();
+
+        render(<BookTable books={books} />);
+
+        await user.click(
+            screen.getByRole("button", {
+                name: "Atomic Habits",
+            })
+        );
+
+        expect(
+            mockRedirectToBookDetails
+        ).toHaveBeenCalledWith(books[0]);
     });
 
     it("opens delete modal when Delete is clicked", async () => {
@@ -290,10 +483,14 @@ describe("BookTable", () => {
             })
         );
 
-        expect(mockDeleteBook).toHaveBeenCalledTimes(1);
-        expect(mockDeleteBook).toHaveBeenCalledWith(
+        expect(
+            mockDeleteBook
+        ).toHaveBeenCalledTimes(1);
+
+        expect(
+            mockDeleteBook
+        ).toHaveBeenCalledWith(
             "book-1",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             expect.any(Object)
         );
     });
@@ -317,10 +514,8 @@ describe("BookTable", () => {
     it("shows success toast after deleting a book", async () => {
         const user = userEvent.setup();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockDeleteBook.mockImplementation(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (_id, options: any) => {
+            (_id: string, options: any) => {
                 options.onSuccess();
             }
         );
@@ -339,7 +534,9 @@ describe("BookTable", () => {
             })
         );
 
-        expect(mockShowToast).toHaveBeenCalledWith(
+        expect(
+            mockShowToast
+        ).toHaveBeenCalledWith(
             "Book deleted successfully",
             "success"
         );
@@ -352,10 +549,8 @@ describe("BookTable", () => {
     it("shows error toast when delete fails", async () => {
         const user = userEvent.setup();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockDeleteBook.mockImplementation(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (_id, options: any) => {
+            (_id: string, options: any) => {
                 options.onError({
                     message: "Delete failed",
                 });
@@ -376,7 +571,9 @@ describe("BookTable", () => {
             })
         );
 
-        expect(mockShowToast).toHaveBeenCalledWith(
+        expect(
+            mockShowToast
+        ).toHaveBeenCalledWith(
             "Delete failed",
             "error"
         );
@@ -385,10 +582,8 @@ describe("BookTable", () => {
     it("shows default error message when error has no message", async () => {
         const user = userEvent.setup();
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         mockDeleteBook.mockImplementation(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (_id, options: any) => {
+            (_id: string, options: any) => {
                 options.onError({});
             }
         );
@@ -407,7 +602,9 @@ describe("BookTable", () => {
             })
         );
 
-        expect(mockShowToast).toHaveBeenCalledWith(
+        expect(
+            mockShowToast
+        ).toHaveBeenCalledWith(
             "Failed to delete book",
             "error"
         );

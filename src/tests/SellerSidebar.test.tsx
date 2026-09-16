@@ -1,17 +1,25 @@
+
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import SellerSidebar from "../components/SellerSidebar";
-import { redirectToDashboard, redirectToOrders, redirectToMyBooks, redirectToAddBook } from "../utils/sellerNavigation";
 
+import SellerSidebar from "../components/SellerSidebar";
+
+import {
+    redirectToDashboard,
+    redirectToOrders,
+    redirectToMyBooks,
+    redirectToAddBook,
+    redirectToAuctionedBooks,
+} from "../utils/sellerNavigation";
 
 vi.mock("../utils/sellerNavigation", () => ({
     redirectToDashboard: vi.fn(),
     redirectToOrders: vi.fn(),
     redirectToMyBooks: vi.fn(),
     redirectToAddBook: vi.fn(),
+    redirectToAuctionedBooks: vi.fn(),
 }));
-
 
 describe("SellerSidebar", () => {
     beforeEach(() => {
@@ -48,6 +56,12 @@ describe("SellerSidebar", () => {
         expect(
             screen.getByRole("button", {
                 name: /add book/i,
+            })
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("button", {
+                name: /auctioned books/i,
             })
         ).toBeInTheDocument();
     });
@@ -117,5 +131,19 @@ describe("SellerSidebar", () => {
         );
 
         expect(redirectToAddBook).toHaveBeenCalledTimes(1);
+    });
+
+    it("calls redirectToAuctionedBooks when Auctioned Books is clicked", async () => {
+        const user = userEvent.setup();
+
+        render(<SellerSidebar currentPage="dashboard" />);
+
+        await user.click(
+            screen.getByRole("button", {
+                name: /auctioned books/i,
+            })
+        );
+
+        expect(redirectToAuctionedBooks).toHaveBeenCalledTimes(1);
     });
 });
