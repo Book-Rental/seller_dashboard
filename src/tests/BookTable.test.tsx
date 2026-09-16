@@ -1,7 +1,40 @@
+
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import BookTable from "../components/BookTable";
+
+type ButtonProps = {
+    children: React.ReactNode;
+    onClick?: () => void;
+    disabled?: boolean;
+    [key: string]: unknown;
+};
+
+type DeleteModalProps = {
+    open: boolean;
+    bookName: string;
+    onClose: () => void;
+    onConfirm: () => void;
+};
+
+type AuctionConfirmDetails = {
+    startingBid: string;
+    buyNowPrice: string;
+    duration: string;
+    startDate: string;
+};
+
+type AuctionDetailsModalProps = {
+    isOpen: boolean;
+    onClose: () => void;
+    onConfirm: (details: AuctionConfirmDetails) => void;
+};
+
+type DeleteMutationOptions = {
+    onSuccess?: () => void;
+    onError?: (error: { message?: string }) => void;
+};
 
 const {
     mockDeleteBook,
@@ -23,7 +56,7 @@ vi.mock("@rentbook/rentbook-ui-lib", () => ({
         onClick,
         disabled,
         ...props
-    }: any) => (
+    }: ButtonProps) => (
         <button
             type="button"
             onClick={onClick}
@@ -49,7 +82,7 @@ vi.mock("../components/DeleteBookModal", () => ({
         bookName,
         onClose,
         onConfirm,
-    }: any) =>
+    }: DeleteModalProps) =>
         open ? (
             <div data-testid="delete-modal">
                 <p>{bookName}</p>
@@ -76,7 +109,7 @@ vi.mock("../components/AuctionDetailsModal", () => ({
         isOpen,
         onClose,
         onConfirm,
-    }: any) =>
+    }: AuctionDetailsModalProps) =>
         isOpen ? (
             <div data-testid="auction-details-modal">
                 <button
@@ -515,8 +548,8 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (_id: string, options: any) => {
-                options.onSuccess();
+            (_id: string, options: DeleteMutationOptions) => {
+                options.onSuccess?.();
             }
         );
 
@@ -550,8 +583,8 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (_id: string, options: any) => {
-                options.onError({
+            (_id: string, options: DeleteMutationOptions) => {
+                options.onError?.({
                     message: "Delete failed",
                 });
             }
@@ -583,8 +616,8 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (_id: string, options: any) => {
-                options.onError({});
+            (_id: string, options: DeleteMutationOptions) => {
+                options.onError?.({});
             }
         );
 
