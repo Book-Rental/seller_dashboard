@@ -1,7 +1,7 @@
 import { Rb_Text } from "@rentbook/rentbook-ui-lib";
 
 type Props = {
-    status: string;
+    status?: string;
 };
 
 const statusClasses: Record<string, string> = {
@@ -11,9 +11,9 @@ const statusClasses: Record<string, string> = {
     inactive: "bg-gray-100 text-gray-700",
 };
 
-const AvailabilityBadge = ({ status }: Props) => {
+const AvailabilityBadge = ({ status = "inactive" }: Props) => {
     const normalizedStatus = status
-        ?.replace(/\s+/g, "")
+        .replace(/[\s_-]+/g, "")
         .toLowerCase();
 
     return (

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
     Pagination,
     Rb_Button,
     Rb_LoadingSpinner,
     Rb_Text,
 } from "@rentbook/rentbook-ui-lib";
+
 import BookTable from "../components/BookTable";
 import { useSellerBooks } from "../hooks/useSellerBooks";
 import { SellerBook } from "../types/book";
@@ -12,15 +13,13 @@ import { SellerBook } from "../types/book";
 import SellerLayout from "../components/SellerLayout";
 import { redirectToAddBook } from "../utils/sellerNavigation";
 
-
 const MyBooks = () => {
-    const user = window.HOST_USER_INFO
+    const user = window.HOST_USER_INFO;
     const sellerId = user._id;
 
     const [page, setPage] = useState(1);
     const [availability, setAvailability] = useState("");
     const [categoryName, setCategoryName] = useState("");
-    const [auctionStatus, setAuctionStatus] = useState<Record<string, boolean>>({});
 
     const { data, isLoading } = useSellerBooks(
         sellerId,
@@ -31,36 +30,27 @@ const MyBooks = () => {
     const books: SellerBook[] =
         data?.data?.books?.books ?? [];
 
-    const categories = [
-        ...new Set(
-            books
-                .map((book) => book.categoryId.name)
-                .filter(Boolean)
-        ),
-    ];
-
-    useEffect(() => {
-        if (books.length) {
-            const status: Record<string, boolean> = {};
-
-            books.forEach((book) => {
-                status[book._id] = false; // default disabled
-            });
-
-            setAuctionStatus(status);
-        }
+    /*
+     * API:
+     * book.categoryId.name
+     */
+    const categories = useMemo(() => {
+        return [
+            ...new Set(
+                books
+                    .map((book) => book.categoryId?.name)
+                    .filter(Boolean)
+            ),
+        ];
     }, [books]);
 
-    const toggleAuction = (bookId: string) => {
-        setAuctionStatus((prev) => ({
-            ...prev,
-            [bookId]: !prev[bookId],
-        }));
-    };
-
     const meta = data?.data?.books?.meta;
+
     const totalPages = meta?.totalPages ?? 0;
 
+    /*
+     * Availability filter
+     */
     const displayedBooks = useMemo(() => {
         return books.filter((book) => {
             return (
@@ -73,6 +63,7 @@ const MyBooks = () => {
     return (
         <SellerLayout currentPage="seller-my-books">
             <div className="min-h-screen p-4 sm:p-6 lg:p-8">
+                {/* Header */}
                 <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <Rb_Text
@@ -86,7 +77,8 @@ const MyBooks = () => {
                             variant="p"
                             className="mt-1 text-sm text-gray-500 sm:text-base"
                         >
-                            Total Books: {meta?.totalRecords ?? 0}
+                            Total Books:{" "}
+                            {meta?.totalRecords ?? 0}
                         </Rb_Text>
                     </div>
 
@@ -100,15 +92,20 @@ const MyBooks = () => {
 
                 {/* Filters */}
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row">
+                    {/* Category */}
                     <select
                         value={categoryName}
                         onChange={(e) => {
                             setPage(1);
-                            setCategoryName(e.target.value);
+                            setCategoryName(
+                                e.target.value
+                            );
                         }}
                         className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:w-56"
                     >
-                        <option value="">All Categories</option>
+                        <option value="">
+                            All Categories
+                        </option>
 
                         {categories.map((category) => (
                             <option
@@ -120,33 +117,41 @@ const MyBooks = () => {
                         ))}
                     </select>
 
+                    {/* Availability */}
                     <select
                         value={availability}
                         onChange={(e) =>
-                            setAvailability(e.target.value)
+                            setAvailability(
+                                e.target.value
+                            )
                         }
                         className="w-full rounded-lg border border-gray-300 px-4 py-2 sm:w-48"
                     >
-                        <option value="">Availability</option>
+                        <option value="">
+                            Availability
+                        </option>
+
                         <option value="available">
                             Available
                         </option>
+
                         <option value="unavailable">
                             Unavailable
                         </option>
                     </select>
                 </div>
 
+                {/* Books */}
                 {isLoading ? (
                     <div className="flex justify-center py-10">
-                        <Rb_LoadingSpinner text="Loading books..." />
+                        <Rb_LoadingSpinner
+                            text="Loading books..."
+                        />
                     </div>
                 ) : (
                     <>
                         <BookTable
                             books={displayedBooks}
-                            auctionStatus={auctionStatus}
-                            onToggleAuction={toggleAuction}
                         />
 
                         {totalPages > 1 && (

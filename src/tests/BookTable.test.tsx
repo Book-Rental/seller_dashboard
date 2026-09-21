@@ -1,4 +1,3 @@
-
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -27,6 +26,7 @@ type AuctionConfirmDetails = {
 
 type AuctionDetailsModalProps = {
     isOpen: boolean;
+    book: unknown;
     onClose: () => void;
     onConfirm: (details: AuctionConfirmDetails) => void;
 };
@@ -41,13 +41,11 @@ const {
     mockRedirectToEditBook,
     mockRedirectToBookDetails,
     mockShowToast,
-    mockUseAuctionBooks,
 } = vi.hoisted(() => ({
     mockDeleteBook: vi.fn(),
     mockRedirectToEditBook: vi.fn(),
     mockRedirectToBookDetails: vi.fn(),
     mockShowToast: vi.fn(),
-    mockUseAuctionBooks: vi.fn(),
 }));
 
 vi.mock("@rentbook/rentbook-ui-lib", () => ({
@@ -143,10 +141,6 @@ vi.mock("../hooks/useDeleteBook", () => ({
     }),
 }));
 
-vi.mock("../hooks/useAuctionBooks", () => ({
-    useAuctionBooks: mockUseAuctionBooks,
-}));
-
 vi.mock("../utils/toast", () => ({
     showToast: mockShowToast,
 }));
@@ -156,71 +150,143 @@ vi.mock("../utils/sellerNavigation", () => ({
     redirectToBookDetails: mockRedirectToBookDetails,
 }));
 
-const books = [
-    {
-        _id: "book-1",
-        sellerId: "seller-1",
-        name: "Atomic Habits",
-        description: "A self-help book",
-        coverImage: "cover.jpg",
-        images: [
-            {
-                url: "cover.jpg",
-                altText: "Atomic Habits Cover",
-            },
-        ],
-        author: "James Clear",
-        language: "English",
-        edition: "1st",
-        isbn: "9780735211292",
-        categoryId: {
-            _id: "cat-1",
-            name: "Self Help",
+const baseBook = {
+    _id: "book-1",
+    sellerId: "seller-1",
+    name: "Atomic Habits",
+    description: "A self-help book",
+    coverImage: "cover.jpg",
+
+    images: [
+        {
+            url: "cover.jpg",
+            altText: "Atomic Habits Cover",
         },
-        purchasePrice: 500,
-        rentalPricePerDay: 50,
-        rentalPricePerWeek: 250,
-        rentalPricePerMonth: 800,
-        securityDeposit: 1000,
-        quantity: 5,
-        availabilityStatus: "available",
-        isAvailable: true,
-        isActive: true,
-        createdAt: "2026-07-31T10:00:00.000Z",
-        updatedAt: "2026-07-31T10:00:00.000Z",
+    ],
+
+    author: "James Clear",
+    language: "English",
+    edition: "1st",
+    isbn: "9780735211292",
+
+    categoryId: {
+        _id: "cat-1",
+        name: "Self Help",
     },
-];
+
+    purchasePrice: 500,
+
+    rentalPricePerDay: 50,
+    rentalPricePerWeek: 250,
+    rentalPricePerMonth: 800,
+
+    securityDeposit: 1000,
+
+    quantity: 5,
+
+    availabilityStatus: "available",
+    availableForRent: true,
+    availableForSale: true,
+
+    isAvailable: true,
+    isActive: true,
+    isAuction: false,
+
+    createdAt: "2026-07-31T10:00:00.000Z",
+    updatedAt: "2026-07-31T10:00:00.000Z",
+};
+
+const createAuction = (
+    status:
+        | "upcoming"
+        | "live"
+        | "completed"
+        | "cancelled",
+    order: {
+        _id: string;
+        orderNumber: string;
+        orderType: string;
+        orderStatus: string;
+    } | null = null
+) => ({
+    _id: "auction-1",
+    bookId: "book-1",
+
+    bidPrice: 100,
+    buyNowPrice: 500,
+
+    duration: 24,
+    startDate: "2026-09-15",
+
+    status,
+
+    currentBidPrice: 200,
+
+    highestBidder: null,
+    highestBid: null,
+
+    bidCount: 0,
+
+    order,
+});
+
+const books = [baseBook];
 
 describe("BookTable", () => {
     beforeEach(() => {
         vi.clearAllMocks();
-
-        mockUseAuctionBooks.mockReturnValue({
-            data: [],
-            isLoading: false,
-            isError: false,
-        });
     });
 
     it("renders table headers", () => {
         render(<BookTable books={books} />);
 
-        expect(screen.getByText("Book")).toBeInTheDocument();
-        expect(screen.getByText("Category")).toBeInTheDocument();
-        expect(screen.getByText("Price / Week")).toBeInTheDocument();
-        expect(screen.getByText("Stock")).toBeInTheDocument();
-        expect(screen.getByText("Availability")).toBeInTheDocument();
-        expect(screen.getByText("Auction")).toBeInTheDocument();
-        expect(screen.getByText("Action")).toBeInTheDocument();
+        expect(
+            screen.getByText("Book")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Category")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Price / Week")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Stock")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Availability")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Auction")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Action")
+        ).toBeInTheDocument();
     });
 
     it("renders book details", () => {
         render(<BookTable books={books} />);
 
-        expect(screen.getByText("₹250")).toBeInTheDocument();
-        expect(screen.getByText("5")).toBeInTheDocument();
-        expect(screen.getByText("Atomic Habits")).toBeInTheDocument();
-        expect(screen.getByText("Self Help")).toBeInTheDocument();
+        expect(
+            screen.getByText("₹250")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("5")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Atomic Habits")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Self Help")
+        ).toBeInTheDocument();
     });
 
     it("renders availability badge", () => {
@@ -231,32 +297,24 @@ describe("BookTable", () => {
         ).toHaveTextContent("available");
     });
 
-    it("renders auction as disabled by default", () => {
+    it("renders Enable Auction when there is no auction", () => {
         render(<BookTable books={books} />);
 
         expect(
             screen.getByRole("button", {
-                name: "Enable auction",
+                name: "Enable Auction",
             })
         ).toBeInTheDocument();
     });
 
-    it("opens auction details modal when Enable auction is clicked", async () => {
+    it("opens auction details modal when Enable Auction is clicked", async () => {
         const user = userEvent.setup();
 
-        render(
-            <BookTable
-                books={books}
-                auctionStatus={{
-                    "book-1": false,
-                }}
-                onToggleAuction={vi.fn()}
-            />
-        );
+        render(<BookTable books={books} />);
 
         await user.click(
             screen.getByRole("button", {
-                name: "Enable auction",
+                name: "Enable Auction",
             })
         );
 
@@ -265,52 +323,14 @@ describe("BookTable", () => {
         ).toBeInTheDocument();
     });
 
-    it("toggles auction after confirming auction details", async () => {
-        const user = userEvent.setup();
-        const mockToggleAuction = vi.fn();
-
-        render(
-            <BookTable
-                books={books}
-                auctionStatus={{
-                    "book-1": false,
-                }}
-                onToggleAuction={mockToggleAuction}
-            />
-        );
-
-        await user.click(
-            screen.getByRole("button", {
-                name: "Enable auction",
-            })
-        );
-
-        await user.click(
-            screen.getByRole("button", {
-                name: "Confirm Auction",
-            })
-        );
-
-        expect(
-            mockToggleAuction
-        ).toHaveBeenCalledWith("book-1");
-    });
-
     it("closes auction details modal", async () => {
         const user = userEvent.setup();
 
-        render(
-            <BookTable
-                books={books}
-                auctionStatus={{
-                    "book-1": false,
-                }}
-            />
-        );
+        render(<BookTable books={books} />);
 
         await user.click(
             screen.getByRole("button", {
-                name: "Enable auction",
+                name: "Enable Auction",
             })
         );
 
@@ -329,104 +349,134 @@ describe("BookTable", () => {
         ).not.toBeInTheDocument();
     });
 
-    it("shows error when book is already available for auction", async () => {
-        const user = userEvent.setup();
+    it("shows live auction toggle when auction status is live", () => {
+        const liveBooks = [
+            {
+                ...baseBook,
+                isAuction: true,
+                auctionId: "auction-1",
+                auction: createAuction("live"),
+            },
+        ];
 
-        render(
-            <BookTable
-                books={books}
-                auctionStatus={{
-                    "book-1": true,
-                }}
-            />
-        );
+        render(<BookTable books={liveBooks} />);
 
-        await user.click(
+        expect(
             screen.getByRole("button", {
-                name: "Book already available for auction",
+                name: "Live auction",
             })
-        );
+        ).toBeInTheDocument();
+    });
+
+    it("shows Upcoming auction for upcoming auction", () => {
+    const book = {
+        ...baseBook,
+        isAuction: true,
+        auction: createAuction("upcoming"),
+    };
+
+    render(
+        <BookTable
+            books={[book]}
+        />
+    );
+
+    expect(
+        screen.getByRole("button", {
+            name: /upcoming auction/i,
+        })
+    ).toBeInTheDocument();
+
+    expect(
+        screen.queryByRole("button", {
+            name: /enable auction/i,
+        })
+    ).not.toBeInTheDocument();
+});
+
+    it("shows Cancelled for cancelled auction", () => {
+        const cancelledBooks = [
+            {
+                ...baseBook,
+                isAuction: true,
+                auctionId: "auction-1",
+                auction: createAuction("cancelled"),
+            },
+        ];
+
+        render(<BookTable books={cancelledBooks} />);
 
         expect(
-            mockShowToast
-        ).toHaveBeenCalledWith(
-            "This book is already available for auction",
-            "error"
-        );
+            screen.getByText("Cancelled")
+        ).toBeInTheDocument();
+    });
+
+    it("shows Auction Completed when completed auction has no order", () => {
+        const completedBooks = [
+            {
+                ...baseBook,
+                isAuction: true,
+                auctionId: "auction-1",
+                auction: createAuction("completed"),
+            },
+        ];
+
+        render(<BookTable books={completedBooks} />);
 
         expect(
-            screen.queryByTestId("auction-details-modal")
+            screen.getByText("Auction Completed")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByRole("button", {
+                name: "Live auction",
+            })
         ).not.toBeInTheDocument();
     });
 
-    it("shows book as already available when it exists in auction books", () => {
-        mockUseAuctionBooks.mockReturnValue({
-            data: [
-                {
-                    _id: "book-1",
-                },
-            ],
-            isLoading: false,
-            isError: false,
-        });
+    it("shows order status when completed auction has an order", () => {
+        const completedBooks = [
+            {
+                ...baseBook,
+                isAuction: true,
+                auctionId: "auction-1",
+                auction: createAuction("completed", {
+                    _id: "order-1",
+                    orderNumber: "ORD-001",
+                    orderType: "auction",
+                    orderStatus: "pending",
+                }),
+            },
+        ];
 
-        render(<BookTable books={books} />);
+        render(<BookTable books={completedBooks} />);
 
         expect(
-            screen.getByRole("button", {
-                name: "Book already available for auction",
-            })
+            screen.getByText("pending")
         ).toBeInTheDocument();
-    });
-
-    it("disables auction button while auction books are loading", () => {
-        mockUseAuctionBooks.mockReturnValue({
-            data: [],
-            isLoading: true,
-            isError: false,
-        });
-
-        render(<BookTable books={books} />);
 
         expect(
-            screen.getByRole("button", {
-                name: "Enable auction",
-            })
-        ).toBeDisabled();
+            screen.queryByText("Auction Completed")
+        ).not.toBeInTheDocument();
     });
 
-    it("disables auction button when auction books request fails", () => {
-        mockUseAuctionBooks.mockReturnValue({
-            data: [],
-            isLoading: false,
-            isError: true,
-        });
+    it("does not show Enable Auction for completed auction", () => {
+        const completedBooks = [
+            {
+                ...baseBook,
+                isAuction: true,
+                auctionId: "auction-1",
+                auction: createAuction("completed"),
+            },
+        ];
 
-        render(<BookTable books={books} />);
-
-        expect(
-            screen.getByRole("button", {
-                name: "Enable auction",
-            })
-        ).toBeDisabled();
-    });
-
-    it("renders auction as enabled when status is true", () => {
-        render(
-            <BookTable
-                books={books}
-                auctionStatus={{
-                    "book-1": true,
-                }}
-                onToggleAuction={vi.fn()}
-            />
-        );
+        render(<BookTable books={completedBooks} />);
 
         expect(
-            screen.getByRole("button", {
-                name: "Book already available for auction",
+            screen.queryByRole("button", {
+                name: "Enable Auction",
             })
-        ).toBeInTheDocument();
+        ).not.toBeInTheDocument();
     });
 
     it("calls redirectToEditBook when Edit is clicked", async () => {
@@ -548,7 +598,10 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (_id: string, options: DeleteMutationOptions) => {
+            (
+                _id: string,
+                options: DeleteMutationOptions
+            ) => {
                 options.onSuccess?.();
             }
         );
@@ -583,7 +636,10 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (_id: string, options: DeleteMutationOptions) => {
+            (
+                _id: string,
+                options: DeleteMutationOptions
+            ) => {
                 options.onError?.({
                     message: "Delete failed",
                 });
@@ -616,7 +672,10 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (_id: string, options: DeleteMutationOptions) => {
+            (
+                _id: string,
+                options: DeleteMutationOptions
+            ) => {
                 options.onError?.({});
             }
         );
