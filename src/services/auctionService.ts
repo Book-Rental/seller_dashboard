@@ -11,11 +11,70 @@ export type CreateAuctionPayload = {
 export type AuctionDetails = {
     _id: string;
     bookId: string;
+
     bidPrice: number;
-    buyNowPrice: number;
+    buyNowPrice?: number;
+
     duration: number;
     startDate: string;
-    status?: string;
+
+    status:
+        | "upcoming"
+        | "live"
+        | "completed"
+        | "cancelled";
+
+    currentBidPrice: number;
+
+    highestBid?: {
+        _id: string;
+        auctionId: string;
+        userId?: string;
+        bidPrice: number;
+        createdAt: string;
+
+        bidder?: {
+            _id: string;
+            email: string | null;
+        } | null;
+    } | null;
+
+    highestBidder?: {
+        userId: string;
+        name: string;
+        email: string;
+        phone: string | null;
+        profileImage: string | null;
+
+        address?: {
+            _id?: string;
+            name?: string;
+            type?: "home" | "work" | "other";
+            street?: string;
+            city?: string;
+            state?: string;
+            zipCode?: string;
+            country?: string;
+            phone?: string;
+
+            location?: {
+                latitude?: number;
+                longitude?: number;
+            };
+
+            isDefault?: boolean;
+        } | null;
+    } | null;
+
+    bidCount: number;
+
+    order?: {
+        _id: string;
+        orderNumber?: string;
+        orderType: string;
+        orderStatus: string;
+        // [key: string]: any;
+    } | null;
 };
 
 export type AuctionBook = {

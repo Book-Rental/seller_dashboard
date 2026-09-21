@@ -3,7 +3,6 @@
       redirectToMyBooks,
       redirectToAddBook,
       redirectToDashboard,
-      redirectToAuctionedBooks,
   } from "../utils/sellerNavigation";
 
   type SellerSidebarProps = {
@@ -64,7 +63,7 @@
                   >
                       Add Book
                   </button>
-                  <button
+                  {/* <button
                       onClick={
                           redirectToAuctionedBooks
                       }
@@ -76,7 +75,7 @@
                       }`}
                   >
                       Auctioned Books
-                  </button>
+                  </button> */}
 
               </nav>
           </aside>

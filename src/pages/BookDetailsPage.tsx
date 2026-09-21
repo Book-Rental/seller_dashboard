@@ -232,133 +232,173 @@ const BookDetailsPage: React.FC<Props> = ({
                         </DetailSection>
                     )}
 
-                {!isAuctionLoading &&
-                    !isAuctionError &&
-                    auction && (
-                        <DetailSection title="Auction Details">
-                            <div className="mb-5 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4">
+{!isAuctionLoading &&
+    !isAuctionError &&
+    auction && (
+        <DetailSection title="Auction Details">
+            {/* Auction Status */}
+            <div className="mb-5 flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4">
+                <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+                        Auction Status
+                    </p>
 
-                                <div>
+                    <p className="mt-1 text-lg font-semibold text-gray-900">
+                        {formatStatus(auction.status)}
+                    </p>
+                </div>
 
-                                    <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-                                        Auction Status
-                                    </p>
+                <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
+                    In Auction
+                </span>
+            </div>
 
-                                    <p className="mt-1 text-lg font-semibold text-gray-900">
-                                        {formatStatus(
-                                            auction.status
-                                        )}
-                                    </p>
-
-                                </div>
-
-                                <span className="rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
-                                    In Auction
-                                </span>
-
-                            </div>
-
-                            <div className="grid grid-cols-4 gap-5">
-                                <PriceCard
-                                    label="Starting Bid"
-                                    value={formatCurrency(
-                                        auction.bidPrice
-                                    )}
-                                />
-
-                                <PriceCard
-                                    label="Buy Now Price"
-                                    value={formatCurrency(
-                                        auction.buyNowPrice
-                                    )}
-                                />
-
-                                <PriceCard
-                                    label="Duration"
-                                    value={`${auction.duration} ${
-                                        auction.duration ===
-                                        1
-                                            ? "Day"
-                                            : "Days"
-                                    }`}
-                                />
-
-                                <PriceCard
-                                    label="Status"
-                                    value={formatStatus(
-                                        auction.status
-                                    )}
-                                />
-
-                            </div>
-
-                            <div className="mt-5 grid grid-cols-2 gap-5">
-
-                                <DetailItem
-                                    label="Auction Start Date"
-                                    value={formatDate(
-                                        auction.startDate
-                                    )}
-                                />
-
-                                <DetailItem
-                                    label="Auction ID"
-                                    value={
-                                        auction._id
-                                    }
-                                />
-
-                            </div>
-
-                            <div className="mt-5">
-
-                                <DetailItem
-                                    label="Auction Book ID"
-                                    value={
-                                        auction.bookId
-                                    }
-                                />
-
-                            </div>
-
-                        </DetailSection>
+            {/* Auction Pricing */}
+            <div className="grid grid-cols-4 gap-5">
+                <PriceCard
+                    label="Starting Bid"
+                    value={formatCurrency(
+                        auction.bidPrice
                     )}
+                />
 
-                {book.images &&
-                    book.images.length > 0 && (
-                        <DetailSection title="Additional Images">
+                <PriceCard
+                    label="Current / Highest Bid"
+                    value={formatCurrency(
+                        auction.currentBidPrice
+                    )}
+                />
 
-                            <div className="flex flex-wrap gap-4">
+                <PriceCard
+                    label="Buy Now Price"
+                    value={
+                        auction.buyNowPrice
+                            ? formatCurrency(
+                                  auction.buyNowPrice
+                              )
+                            : "-"
+                    }
+                />
 
-                                {book.images.map(
-                                    (
-                                        image,
-                                        index
-                                    ) => (
-                                        <div
-                                            key={`${image.url}-${index}`}
-                                            className="overflow-hidden rounded-lg border border-gray-200"
-                                        >
+                <PriceCard
+                    label="Duration"
+                    value={`${auction.duration} ${
+                        auction.duration === 1
+                            ? "Day"
+                            : "Days"
+                    }`}
+                />
+            </div>
 
-                                            <img
-                                                src={
-                                                    image.url
-                                                }
-                                                alt={
-                                                    image.altText ||
-                                                    book.name
-                                                }
-                                                className="h-32 w-24 object-cover"
-                                            />
+            {/* Highest Bidder */}
+            {(auction.status === "live" ||
+                auction.status === "completed") &&
+                auction.highestBidder && (
+                    <div className="mt-5 rounded-lg border border-blue-200 bg-blue-50 p-5">
+                        <h4 className="mb-4 text-base font-semibold text-gray-900">
+                            Highest Bidder
+                        </h4>
 
-                                        </div>
-                                    )
+                        <div className="grid grid-cols-3 gap-5">
+                            <DetailItem
+                                label="Name"
+                                value={
+                                    auction
+                                        .highestBidder
+                                        .name
+                                }
+                            />
+
+                            <DetailItem
+                                label="Email"
+                                value={
+                                    auction
+                                        .highestBidder
+                                        .email
+                                }
+                            />
+
+                            <DetailItem
+                                label="Phone"
+                                value={
+                                    auction
+                                        .highestBidder
+                                        .phone ??
+                                    "-"
+                                }
+                            />
+                        </div>
+
+                        <div className="mt-5">
+                            <PriceCard
+                                label="Highest Bid"
+                                value={formatCurrency(
+                                    auction.currentBidPrice
                                 )}
+                            />
+                        </div>
+                    </div>
+                )}
 
-                            </div>
+            {/* Completed Auction Order */}
+            {auction.status === "completed" &&
+                auction.order && (
+                    <div className="mt-5 rounded-lg border border-orange-200 bg-orange-50 p-5">
+                        <h4 className="mb-4 text-base font-semibold text-gray-900">
+                            Order Details
+                        </h4>
 
-                        </DetailSection>
+                        <div className="grid grid-cols-3 gap-5">
+                            <DetailItem
+                                label="Order Number"
+                                value={
+                                    auction.order
+                                        .orderNumber
+                                }
+                            />
+
+                            <DetailItem
+                                label="Order Type"
+                                value={formatStatus(
+                                    auction.order
+                                        .orderType
+                                )}
+                            />
+
+                            <DetailItem
+                                label="Order Status"
+                                value={formatStatus(
+                                    auction.order
+                                        .orderStatus
+                                )}
+                            />
+                        </div>
+                    </div>
+                )}
+
+            {/* Auction Dates / IDs */}
+            <div className="mt-5 grid grid-cols-2 gap-5">
+                <DetailItem
+                    label="Auction Start Date"
+                    value={formatDate(
+                        auction.startDate
                     )}
+                />
+
+                {/* <DetailItem
+                    label="Auction ID"
+                    value={auction._id}
+                /> */}
+            </div>
+
+            {/* <div className="mt-5">
+                <DetailItem
+                    label="Auction Book ID"
+                    value={auction.bookId}
+                />
+            </div> */}
+        </DetailSection>
+    )}
 
             </div>
         </div>
