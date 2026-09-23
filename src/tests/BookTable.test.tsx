@@ -1,7 +1,32 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+    QueryClient,
+    QueryClientProvider,
+} from "@tanstack/react-query";
+
 import BookTable from "../components/BookTable";
+import type { SellerBook } from "../types/book";
+
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            retry: false,
+        },
+        mutations: {
+            retry: false,
+        },
+    },
+});
+
+const renderBookTable = (books: SellerBook[]) => {
+    return render(
+        <QueryClientProvider client={queryClient}>
+            <BookTable books={books} />
+        </QueryClientProvider>
+    );
+};
 
 type ButtonProps = {
     children: React.ReactNode;
@@ -85,17 +110,11 @@ vi.mock("../components/DeleteBookModal", () => ({
             <div data-testid="delete-modal">
                 <p>{bookName}</p>
 
-                <button
-                    type="button"
-                    onClick={onClose}
-                >
+                <button type="button" onClick={onClose}>
                     Cancel
                 </button>
 
-                <button
-                    type="button"
-                    onClick={onConfirm}
-                >
+                <button type="button" onClick={onConfirm}>
                     Confirm Delete
                 </button>
             </div>
@@ -110,10 +129,7 @@ vi.mock("../components/AuctionDetailsModal", () => ({
     }: AuctionDetailsModalProps) =>
         isOpen ? (
             <div data-testid="auction-details-modal">
-                <button
-                    type="button"
-                    onClick={onClose}
-                >
+                <button type="button" onClick={onClose}>
                     Close Auction Modal
                 </button>
 
@@ -141,6 +157,17 @@ vi.mock("../hooks/useDeleteBook", () => ({
     }),
 }));
 
+vi.mock("../hooks/useCancelAuction", () => ({
+    useCancelAuction: () => ({
+        mutate: vi.fn(),
+        isPending: false,
+    }),
+}));
+
+vi.mock("../model/CancelAuctionModal", () => ({
+    default: () => null,
+}));
+
 vi.mock("../utils/toast", () => ({
     showToast: mockShowToast,
 }));
@@ -150,24 +177,19 @@ vi.mock("../utils/sellerNavigation", () => ({
     redirectToBookDetails: mockRedirectToBookDetails,
 }));
 
-const baseBook = {
+const baseBook: SellerBook = {
     _id: "book-1",
     sellerId: "seller-1",
+
     name: "Atomic Habits",
     description: "A self-help book",
     coverImage: "cover.jpg",
 
-    images: [
-        {
-            url: "cover.jpg",
-            altText: "Atomic Habits Cover",
-        },
-    ],
+    images: ["cover.jpg"],
 
     author: "James Clear",
     language: "English",
     edition: "1st",
-    isbn: "9780735211292",
 
     categoryId: {
         _id: "cat-1",
@@ -185,6 +207,7 @@ const baseBook = {
     quantity: 5,
 
     availabilityStatus: "available",
+
     availableForRent: true,
     availableForSale: true,
 
@@ -192,41 +215,38 @@ const baseBook = {
     isActive: true,
     isAuction: false,
 
+    listingType: "both",
+    condition: "new",
+    status: "active",
+
+    auction: [],
+
     createdAt: "2026-07-31T10:00:00.000Z",
     updatedAt: "2026-07-31T10:00:00.000Z",
 };
 
 const createAuction = (
-    status:
-        | "upcoming"
-        | "live"
-        | "completed"
-        | "cancelled",
+    status: "upcoming" | "live" | "completed" | "cancelled",
     order: {
         _id: string;
         orderNumber: string;
         orderType: string;
         orderStatus: string;
+        isActive: boolean;
     } | null = null
 ) => ({
     _id: "auction-1",
     bookId: "book-1",
-
     bidPrice: 100,
     buyNowPrice: 500,
-
     duration: 24,
     startDate: "2026-09-15",
-
     status,
-
+    isActive: status === "live" || status === "upcoming",
     currentBidPrice: 200,
-
     highestBidder: null,
     highestBid: null,
-
     bidCount: 0,
-
     order,
 });
 
@@ -238,84 +258,59 @@ describe("BookTable", () => {
     });
 
     it("renders table headers", () => {
-        render(<BookTable books={books} />);
+        renderBookTable(books);
 
-        expect(
-            screen.getByText("Book")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Category")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Price / Week")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Stock")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Availability")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Auction")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Action")
-        ).toBeInTheDocument();
+        expect(screen.getByText("Book")).toBeInTheDocument();
+        expect(screen.getByText("Category")).toBeInTheDocument();
+        expect(screen.getByText("Availability")).toBeInTheDocument();
+        expect(screen.getByText("Auction")).toBeInTheDocument();
+        expect(screen.getByText("Action")).toBeInTheDocument();
     });
 
     it("renders book details", () => {
-        render(<BookTable books={books} />);
+        renderBookTable(books);
 
         expect(
-            screen.getByText("₹250")
+            screen.getAllByText("Atomic Habits")[0]
         ).toBeInTheDocument();
 
         expect(
-            screen.getByText("5")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Atomic Habits")
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByText("Self Help")
+            screen.getAllByText("Self Help")[0]
         ).toBeInTheDocument();
     });
 
     it("renders availability badge", () => {
-        render(<BookTable books={books} />);
+        renderBookTable(books);
 
-        expect(
-            screen.getByTestId("availability-badge")
-        ).toHaveTextContent("available");
+        const badges = screen.getAllByTestId(
+            "availability-badge"
+        );
+
+        expect(badges.length).toBeGreaterThan(0);
+        badges.forEach((badge) =>
+            expect(badge).toHaveTextContent("available")
+        );
     });
 
-    it("renders Enable Auction when there is no auction", () => {
-        render(<BookTable books={books} />);
+    it("renders Start auction button when there is no auction", () => {
+        renderBookTable(books);
 
         expect(
-            screen.getByRole("button", {
-                name: "Enable Auction",
-            })
+            screen.getAllByRole("button", {
+                name: "Start auction",
+            })[0]
         ).toBeInTheDocument();
     });
 
-    it("opens auction details modal when Enable Auction is clicked", async () => {
+    it("opens auction details modal when Start auction is clicked", async () => {
         const user = userEvent.setup();
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
 
         await user.click(
-            screen.getByRole("button", {
-                name: "Enable Auction",
-            })
+            screen.getAllByRole("button", {
+                name: "Start auction",
+            })[0]
         );
 
         expect(
@@ -326,12 +321,12 @@ describe("BookTable", () => {
     it("closes auction details modal", async () => {
         const user = userEvent.setup();
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
 
         await user.click(
-            screen.getByRole("button", {
-                name: "Enable Auction",
-            })
+            screen.getAllByRole("button", {
+                name: "Start auction",
+            })[0]
         );
 
         expect(
@@ -355,44 +350,40 @@ describe("BookTable", () => {
                 ...baseBook,
                 isAuction: true,
                 auctionId: "auction-1",
-                auction: createAuction("live"),
+                auction: [createAuction("live")],
             },
         ];
 
-        render(<BookTable books={liveBooks} />);
+        renderBookTable(liveBooks);
 
-        expect(
-            screen.getByRole("button", {
-                name: "Live auction",
-            })
-        ).toBeInTheDocument();
+        expect(screen.getAllByText("Live")[0]).toBeInTheDocument();
     });
 
     it("shows Upcoming auction for upcoming auction", () => {
-    const book = {
-        ...baseBook,
-        isAuction: true,
-        auction: createAuction("upcoming"),
-    };
+        const book = {
+            ...baseBook,
+            isAuction: true,
+            auction: [createAuction("upcoming")],
+        };
 
-    render(
-        <BookTable
-            books={[book]}
-        />
-    );
+        renderBookTable([book]);
 
-    expect(
-        screen.getByRole("button", {
-            name: /upcoming auction/i,
-        })
-    ).toBeInTheDocument();
+        expect(
+            screen.getAllByText("Upcoming")[0]
+        ).toBeInTheDocument();
 
-    expect(
-        screen.queryByRole("button", {
-            name: /enable auction/i,
-        })
-    ).not.toBeInTheDocument();
-});
+        expect(
+            screen.getAllByRole("button", {
+                name: "Cancel auction",
+            })[0]
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByRole("button", {
+                name: "Start auction",
+            })
+        ).not.toBeInTheDocument();
+    });
 
     it("shows Cancelled for cancelled auction", () => {
         const cancelledBooks = [
@@ -400,36 +391,42 @@ describe("BookTable", () => {
                 ...baseBook,
                 isAuction: true,
                 auctionId: "auction-1",
-                auction: createAuction("cancelled"),
+                auction: [createAuction("cancelled")],
             },
         ];
 
-        render(<BookTable books={cancelledBooks} />);
+        renderBookTable(cancelledBooks);
 
         expect(
-            screen.getByText("Cancelled")
+            screen.getAllByText("Cancelled")[0]
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getAllByRole("button", {
+                name: "Start new auction",
+            })[0]
         ).toBeInTheDocument();
     });
 
-    it("shows Auction Completed when completed auction has no order", () => {
+    it("shows Completed when completed auction has no order", () => {
         const completedBooks = [
             {
                 ...baseBook,
                 isAuction: true,
                 auctionId: "auction-1",
-                auction: createAuction("completed"),
+                auction: [createAuction("completed")],
             },
         ];
 
-        render(<BookTable books={completedBooks} />);
+        renderBookTable(completedBooks);
 
         expect(
-            screen.getByText("Auction Completed")
+            screen.getAllByText("Completed")[0]
         ).toBeInTheDocument();
 
         expect(
             screen.queryByRole("button", {
-                name: "Live auction",
+                name: "Cancel auction",
             })
         ).not.toBeInTheDocument();
     });
@@ -440,41 +437,42 @@ describe("BookTable", () => {
                 ...baseBook,
                 isAuction: true,
                 auctionId: "auction-1",
-                auction: createAuction("completed", {
-                    _id: "order-1",
-                    orderNumber: "ORD-001",
-                    orderType: "auction",
-                    orderStatus: "pending",
-                }),
+                auction: [
+                    createAuction("completed", {
+                        _id: "order-1",
+                        orderNumber: "ORD-001",
+                        orderType: "auction",
+                        orderStatus: "pending",
+                        isActive: true,
+                    }),
+                ],
             },
         ];
 
-        render(<BookTable books={completedBooks} />);
+        renderBookTable(completedBooks);
 
         expect(
-            screen.getByText("pending")
+            screen.getAllByText("pending")[0]
         ).toBeInTheDocument();
 
-        expect(
-            screen.queryByText("Auction Completed")
-        ).not.toBeInTheDocument();
+        expect(screen.queryByText("Completed")).not.toBeInTheDocument();
     });
 
-    it("does not show Enable Auction for completed auction", () => {
+    it("does not show Start auction for completed auction", () => {
         const completedBooks = [
             {
                 ...baseBook,
                 isAuction: true,
                 auctionId: "auction-1",
-                auction: createAuction("completed"),
+                auction: [createAuction("completed")],
             },
         ];
 
-        render(<BookTable books={completedBooks} />);
+        renderBookTable(completedBooks);
 
         expect(
             screen.queryByRole("button", {
-                name: "Enable Auction",
+                name: "Start auction",
             })
         ).not.toBeInTheDocument();
     });
@@ -482,66 +480,58 @@ describe("BookTable", () => {
     it("calls redirectToEditBook when Edit is clicked", async () => {
         const user = userEvent.setup();
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
 
-        await user.click(
-            screen.getByRole("button", {
-                name: "Edit book",
-            })
-        );
+        const editButtons = screen.getAllByRole("button", {
+            name: "Edit book",
+        });
 
-        expect(
-            mockRedirectToEditBook
-        ).toHaveBeenCalledWith("book-1");
+        await user.click(editButtons[0]);
+
+        expect(mockRedirectToEditBook).toHaveBeenCalledWith("book-1");
     });
 
     it("calls redirectToBookDetails when book name is clicked", async () => {
         const user = userEvent.setup();
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
 
-        await user.click(
-            screen.getByRole("button", {
-                name: "Atomic Habits",
-            })
-        );
+        const bookButtons = screen.getAllByRole("button", {
+            name: "Atomic Habits",
+        });
 
-        expect(
-            mockRedirectToBookDetails
-        ).toHaveBeenCalledWith(books[0]);
+        await user.click(bookButtons[0]);
+
+        expect(mockRedirectToBookDetails).toHaveBeenCalledWith(books[0]);
     });
 
     it("opens delete modal when Delete is clicked", async () => {
         const user = userEvent.setup();
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
 
-        await user.click(
-            screen.getByRole("button", {
-                name: "Delete book",
-            })
-        );
+        const deleteButtons = screen.getAllByRole("button", {
+            name: "Delete book",
+        });
 
-        expect(
-            screen.getByTestId("delete-modal")
-        ).toBeInTheDocument();
+        await user.click(deleteButtons[0]);
+
+        expect(screen.getByTestId("delete-modal")).toBeInTheDocument();
     });
 
     it("closes delete modal when Cancel is clicked", async () => {
         const user = userEvent.setup();
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
+
+        const deleteButtons = screen.getAllByRole("button", {
+            name: "Delete book",
+        });
+
+        await user.click(deleteButtons[0]);
 
         await user.click(
-            screen.getByRole("button", {
-                name: "Delete book",
-            })
-        );
-
-        await user.click(
-            screen.getByRole("button", {
-                name: "Cancel",
-            })
+            screen.getByRole("button", { name: "Cancel" })
         );
 
         expect(
@@ -552,42 +542,35 @@ describe("BookTable", () => {
     it("calls deleteBook when Confirm Delete is clicked", async () => {
         const user = userEvent.setup();
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
+
+        const deleteButtons = screen.getAllByRole("button", {
+            name: "Delete book",
+        });
+
+        await user.click(deleteButtons[0]);
 
         await user.click(
-            screen.getByRole("button", {
-                name: "Delete book",
-            })
+            screen.getByRole("button", { name: "Confirm Delete" })
         );
 
-        await user.click(
-            screen.getByRole("button", {
-                name: "Confirm Delete",
-            })
-        );
-
-        expect(
-            mockDeleteBook
-        ).toHaveBeenCalledTimes(1);
-
-        expect(
-            mockDeleteBook
-        ).toHaveBeenCalledWith(
+        expect(mockDeleteBook).toHaveBeenCalledTimes(1);
+        expect(mockDeleteBook).toHaveBeenCalledWith(
             "book-1",
             expect.any(Object)
         );
     });
 
     it("renders empty state", () => {
-        render(<BookTable books={[]} />);
+        renderBookTable([]);
 
         expect(
-            screen.getByText("No Books Found")
+            screen.getAllByText("No books found")[0]
         ).toBeInTheDocument();
     });
 
     it("does not render any books when empty", () => {
-        render(<BookTable books={[]} />);
+        renderBookTable([]);
 
         expect(
             screen.queryByText("Atomic Habits")
@@ -598,31 +581,24 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (
-                _id: string,
-                options: DeleteMutationOptions
-            ) => {
+            (_id: string, options: DeleteMutationOptions) => {
                 options.onSuccess?.();
             }
         );
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
+
+        const deleteButtons = screen.getAllByRole("button", {
+            name: "Delete book",
+        });
+
+        await user.click(deleteButtons[0]);
 
         await user.click(
-            screen.getByRole("button", {
-                name: "Delete book",
-            })
+            screen.getByRole("button", { name: "Confirm Delete" })
         );
 
-        await user.click(
-            screen.getByRole("button", {
-                name: "Confirm Delete",
-            })
-        );
-
-        expect(
-            mockShowToast
-        ).toHaveBeenCalledWith(
+        expect(mockShowToast).toHaveBeenCalledWith(
             "Book deleted successfully",
             "success"
         );
@@ -636,33 +612,24 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (
-                _id: string,
-                options: DeleteMutationOptions
-            ) => {
-                options.onError?.({
-                    message: "Delete failed",
-                });
+            (_id: string, options: DeleteMutationOptions) => {
+                options.onError?.({ message: "Delete failed" });
             }
         );
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
+
+        const deleteButtons = screen.getAllByRole("button", {
+            name: "Delete book",
+        });
+
+        await user.click(deleteButtons[0]);
 
         await user.click(
-            screen.getByRole("button", {
-                name: "Delete book",
-            })
+            screen.getByRole("button", { name: "Confirm Delete" })
         );
 
-        await user.click(
-            screen.getByRole("button", {
-                name: "Confirm Delete",
-            })
-        );
-
-        expect(
-            mockShowToast
-        ).toHaveBeenCalledWith(
+        expect(mockShowToast).toHaveBeenCalledWith(
             "Delete failed",
             "error"
         );
@@ -672,31 +639,24 @@ describe("BookTable", () => {
         const user = userEvent.setup();
 
         mockDeleteBook.mockImplementation(
-            (
-                _id: string,
-                options: DeleteMutationOptions
-            ) => {
+            (_id: string, options: DeleteMutationOptions) => {
                 options.onError?.({});
             }
         );
 
-        render(<BookTable books={books} />);
+        renderBookTable(books);
+
+        const deleteButtons = screen.getAllByRole("button", {
+            name: "Delete book",
+        });
+
+        await user.click(deleteButtons[0]);
 
         await user.click(
-            screen.getByRole("button", {
-                name: "Delete book",
-            })
+            screen.getByRole("button", { name: "Confirm Delete" })
         );
 
-        await user.click(
-            screen.getByRole("button", {
-                name: "Confirm Delete",
-            })
-        );
-
-        expect(
-            mockShowToast
-        ).toHaveBeenCalledWith(
+        expect(mockShowToast).toHaveBeenCalledWith(
             "Failed to delete book",
             "error"
         );

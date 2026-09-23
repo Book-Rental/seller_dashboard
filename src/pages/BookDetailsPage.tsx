@@ -23,11 +23,15 @@ const BookDetailsPage: React.FC<Props> = ({
         isLoading: isAuctionLoading,
         isError: isAuctionError,
     } = useAuctionBooks();
-    const auctionBook = auctionBooks.find(
-        (auctionBook) =>
-            auctionBook._id === book._id
-    );
-    const auction = auctionBook?.auction;
+   const auctionBook = auctionBooks.find(
+    (auctionBook) => auctionBook._id === book._id
+);
+
+const auction = Array.isArray(auctionBook?.auction)
+    ? auctionBook.auction.find(
+        (auction) => auction.isActive === true
+    )
+    : undefined;
     const formatDate = (
         date?: string
     ): string => {
@@ -161,7 +165,7 @@ const BookDetailsPage: React.FC<Props> = ({
                         <PriceCard
                             label="Purchase Price"
                             value={formatCurrency(
-                                book.purchasePrice
+                                book.purchasePrice ?? 0
                             )}
                         />
 
