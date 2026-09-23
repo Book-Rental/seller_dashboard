@@ -15,10 +15,10 @@ type AuctionBook = {
     title?: string;
     coverImage?: string;
     categoryId?:
-        | {
-              name?: string;
-          }
-        | string;
+    | {
+        name?: string;
+    }
+    | string;
     condition?: string;
 };
 
@@ -127,8 +127,8 @@ const AuctionDetailsModal = ({
                 bidPrice: Number(startingBid),
                 ...(buyNowPrice
                     ? {
-                          buyNowPrice: Number(buyNowPrice),
-                      }
+                        buyNowPrice: Number(buyNowPrice),
+                    }
                     : {}),
                 duration: durationInDays,
                 startDate: formattedStartDate,
@@ -326,11 +326,8 @@ const AuctionDetailsModal = ({
                                     <input
                                         type="date"
                                         value={startDate}
-                                        onChange={(e) =>
-                                            setStartDate(
-                                                e.target.value
-                                            )
-                                        }
+                                        min={new Date().toISOString().split("T")[0]}
+                                        onChange={(e) => setStartDate(e.target.value)}
                                         className="h-11 w-full rounded-md border border-gray-300 px-3 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                                     />
                                 </div>

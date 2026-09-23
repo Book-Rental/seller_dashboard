@@ -167,3 +167,29 @@ export const getAuctionBooks = async (): Promise<
 
     return [];
 };
+
+export const cancelAuction = async (
+    auctionId: string
+) => {
+    const response = await fetch(
+        `${API_URL}/api/auction/${auctionId}/cancel`,
+        {
+            method: "PATCH",
+            credentials: "include",
+        }
+    );
+
+    const data = await response
+        .json()
+        .catch(() => null);
+
+    if (!response.ok) {
+        throw new Error(
+            data?.message ||
+                data?.error ||
+                "Failed to cancel auction"
+        );
+    }
+
+    return data;
+};
