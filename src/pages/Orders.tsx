@@ -96,13 +96,13 @@ const Orders = () => {
                     Orders
                 </Rb_Text>
 
-                <Rb_Text
+                {/* <Rb_Text
                     variant="p"
                     className="mt-1 text-sm text-gray-500 sm:text-base"
                 >
                     Total Orders :{" "}
                     {filteredOrders.length}
-                </Rb_Text>
+                </Rb_Text> */}
             </div>
 
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
