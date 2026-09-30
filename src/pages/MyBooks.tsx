@@ -73,13 +73,13 @@ const MyBooks = () => {
                             My Books
                         </Rb_Text>
 
-                        <Rb_Text
+                        {/* <Rb_Text
                             variant="p"
                             className="mt-1 text-sm text-gray-500 sm:text-base"
                         >
                             Total Books:{" "}
                             {meta?.totalRecords ?? 0}
-                        </Rb_Text>
+                        </Rb_Text> */}
                     </div>
 
                     <Rb_Button

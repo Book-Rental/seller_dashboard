@@ -2,7 +2,6 @@
       redirectToOrders,
       redirectToMyBooks,
       redirectToAddBook,
-      redirectToDashboard,
   } from "../utils/sellerNavigation";
 
   type SellerSidebarProps = {
@@ -26,13 +25,13 @@
               </h2>
 
               <nav className="space-y-2">
-                  <button
+                  {/* <button
                       onClick={redirectToDashboard}
                       className={`w-full rounded-md p-3 text-left ${currentPage === "dashboard" ? "bg-blue-600 text-white" : "hover:bg-gray-100"
                           }`}
                   >
                       Dashboard
-                  </button>
+                  </button> */}
 
                   <button
                       onClick={redirectToOrders}
