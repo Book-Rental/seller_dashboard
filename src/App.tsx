@@ -123,13 +123,13 @@ function App() {
             }
 
             switch (page) {
-                case "dashboard":
+                // case "dashboard":
 
-                    setCurrentPage(
-                        "dashboard"
-                    );
+                //     setCurrentPage(
+                //         "dashboard"
+                //     );
 
-                    break;
+                //     break;
                 case "orders":
 
                     setCurrentPage(
@@ -180,7 +180,7 @@ function App() {
     const renderPage = () => {
         switch (currentPage) {
             case "dashboard":
-                return <Dashboard />;           case "seller-orders":
+                // return <Dashboard />;           case "seller-orders":
                 return <Orders />;
             case "seller-order-details":
                 return (
@@ -221,9 +221,9 @@ function App() {
                     <MyBooks />
                 );
             case "seller-auctioned-books":
-                return <Dashboard />;
+                return <Orders />;
             default:
-                return <Dashboard />;
+                return <Orders />;
         }
     };
 

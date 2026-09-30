@@ -3,7 +3,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export const getSellerBooks = async (
     sellerId: string,
     page = 1,
-    limit = 10,
+    limit = 20,
     categoryName = ""
 ) => {
     const params = new URLSearchParams({
