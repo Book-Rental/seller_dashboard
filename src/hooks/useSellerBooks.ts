@@ -18,7 +18,7 @@ export const useSellerBooks = (
             getSellerBooks(
                 sellerId,
                 page,
-                10,
+                20,
                 categoryName
             ),
         enabled: !!sellerId,
