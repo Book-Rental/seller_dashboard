@@ -1,117 +1,117 @@
-const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL;
 
-export const getSellerBooks = async (
-    sellerId: string,
-    page = 1,
-    limit = 20,
-    categoryName = ""
-) => {
-    const params = new URLSearchParams({
-        page: String(page),
-        limit: String(limit),
-    });
-    
-    if (categoryName) {
-        params.append("categoryName", categoryName);
-    }
-    
-    const response = await fetch(
-        `${API_URL}/api/book/seller/${sellerId}?${params.toString()}`,
-        {
-            credentials: "include",
-        }
-    );
+  export const getSellerBooks = async (
+      sellerId: string,
+      page = 1,
+      limit = 20,
+      categoryName = ""
+  ) => {
+      const params = new URLSearchParams({
+          page: String(page),
+          limit: String(limit),
+      });
+      
+      if (categoryName) {
+          params.append("categoryName", categoryName);
+      }
+      
+      const response = await fetch(
+          `${API_URL}/api/book/seller/${sellerId}?${params.toString()}`,
+          {
+              credentials: "include",
+          }
+      );
 
-    if (!response.ok) {
-        throw new Error("Failed to fetch seller books");
-    }
+      if (!response.ok) {
+          throw new Error("Failed to fetch seller books");
+      }
 
-    return response.json();
-};
+      return response.json();
+  };
 
-export const createBook = async (formData: FormData) => {
-    const response = await fetch(
-        `${API_URL}/api/book/create`,
-        {
-            method: "POST",
-            credentials: "include",
-            body: formData,
-        }
-    );
+  export const createBook = async (formData: FormData) => {
+      const response = await fetch(
+          `${API_URL}/api/book/create`,
+          {
+              method: "POST",
+              credentials: "include",
+              body: formData,
+          }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-        throw new Error(
-            data.message || "Failed to create book"
-        );
-    }
+      if (!response.ok) {
+          throw new Error(
+              data.message || "Failed to create book"
+          );
+      }
 
-    return data;
-};
+      return data;
+  };
 
-export const getBookById = async (bookId: string) => {
-    const response = await fetch(
-        `${API_URL}/api/book/${bookId}`,
-        {
-            credentials: "include",
-        }
-    );
+  export const getBookById = async (bookId: string) => {
+      const response = await fetch(
+          `${API_URL}/api/book/${bookId}`,
+          {
+              credentials: "include",
+          }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-        throw new Error(
-            data.message || "Failed to fetch book"
-        );
-    }
+      if (!response.ok) {
+          throw new Error(
+              data.message || "Failed to fetch book"
+          );
+      }
 
-    return data;
-};
+      return data;
+  };
 
-export const updateBook = async ({
-    bookId,
-    formData,
-}: {
-    bookId: string;
-    formData: FormData;
-}) => {
-    const response = await fetch(
-        `${API_URL}/api/book/update/${bookId}`,
-        {
-            method: "PUT",
-            credentials: "include",
-            body: formData,
-        }
-    );
+  export const updateBook = async ({
+      bookId,
+      formData,
+  }: {
+      bookId: string;
+      formData: FormData;
+  }) => {
+      const response = await fetch(
+          `${API_URL}/api/book/update/${bookId}`,
+          {
+              method: "PUT",
+              credentials: "include",
+              body: formData,
+          }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-        throw new Error(
-            data.message || "Failed to update book"
-        );
-    }
+      if (!response.ok) {
+          throw new Error(
+              data.message || "Failed to update book"
+          );
+      }
 
-    return data;
-};
+      return data;
+  };
 
-export const deleteBook = async (bookId: string) => {
-    const response = await fetch(
-        `${API_URL}/api/book/${bookId}`,
-        {
-            method: "DELETE",
-            credentials: "include",
-        }
-    );
+  export const deleteBook = async (bookId: string) => {
+      const response = await fetch(
+          `${API_URL}/api/book/${bookId}`,
+          {
+              method: "DELETE",
+              credentials: "include",
+          }
+      );
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-        throw new Error(
-            data.message || "Failed to delete book"
-        );
-    }
+      if (!response.ok) {
+          throw new Error(
+              data.message || "Failed to delete book"
+          );
+      }
 
-    return data;
-};
+      return data;
+  };
