@@ -4,7 +4,7 @@ import {
 } from "@tanstack/react-query";
 import "@rentbook/rentbook-ui-lib/microfrontend.min.css";
 
-import Dashboard from "./pages/Dashboard";
+// import Dashboard from "./pages/Dashboard";
 import Orders from "./pages/Orders";
 import OrderDetails from "./pages/OrderDetails";
 import MyBooks from "./pages/MyBooks";
