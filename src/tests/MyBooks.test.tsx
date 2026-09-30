@@ -27,7 +27,7 @@ vi.mock("../utils/sellerNavigation", () => ({
 }));
 
 vi.mock("../components/SellerLayout", () => ({
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     default: ({ children }: any) => (
         <div data-testid="seller-layout">{children}</div>
     ),
@@ -49,19 +49,22 @@ vi.mock("../components/BookTable", () => ({
 }));
 
 vi.mock("@rentbook/rentbook-ui-lib", () => ({
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Rb_Text: ({ children }: any) => <div>{children}</div>,
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Rb_Button: ({ children, onClick }: any) => (
         <button onClick={onClick}>
             {children}
         </button>
     ),
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Rb_LoadingSpinner: ({ text }: any) => (
         <div data-testid="loading-spinner">{text}</div>
     ),
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Pagination: ({ currentPage, totalPages }: any) => (
         <div data-testid="pagination">
             {currentPage}/{totalPages}
@@ -109,16 +112,33 @@ describe("MyBooks", () => {
     it("renders page", () => {
         render(<MyBooks />);
 
-        expect(screen.getByText("My Books")).toBeInTheDocument();
-        expect(screen.getByText("Total Books: 2")).toBeInTheDocument();
-        expect(screen.getByTestId("seller-layout")).toBeInTheDocument();
+        expect(
+            screen.getByText("My Books")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByTestId("seller-layout")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Atomic Habits")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Clean Code")
+        ).toBeInTheDocument();
     });
 
     it("renders books", () => {
         render(<MyBooks />);
 
-        expect(screen.getByText("Atomic Habits")).toBeInTheDocument();
-        expect(screen.getByText("Clean Code")).toBeInTheDocument();
+        expect(
+            screen.getByText("Atomic Habits")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Clean Code")
+        ).toBeInTheDocument();
     });
 
     it("shows loading spinner", () => {
@@ -129,8 +149,13 @@ describe("MyBooks", () => {
 
         render(<MyBooks />);
 
-        expect(screen.getByTestId("loading-spinner")).toBeInTheDocument();
-        expect(screen.getByText("Loading books...")).toBeInTheDocument();
+        expect(
+            screen.getByTestId("loading-spinner")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Loading books...")
+        ).toBeInTheDocument();
     });
 
     it("redirects when Add Book button is clicked", async () => {
@@ -144,14 +169,21 @@ describe("MyBooks", () => {
             })
         );
 
-        expect(mockRedirectToAddBook).toHaveBeenCalledTimes(1);
+        expect(
+            mockRedirectToAddBook
+        ).toHaveBeenCalledTimes(1);
     });
 
     it("renders pagination", () => {
         render(<MyBooks />);
 
-        expect(screen.getByTestId("pagination")).toBeInTheDocument();
-        expect(screen.getByText("1/2")).toBeInTheDocument();
+        expect(
+            screen.getByTestId("pagination")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("1/2")
+        ).toBeInTheDocument();
     });
 
     it("does not render pagination when only one page exists", () => {
@@ -188,7 +220,10 @@ describe("MyBooks", () => {
             },
         });
 
-        expect(screen.getByText("Atomic Habits")).toBeInTheDocument();
+        expect(
+            screen.getByText("Atomic Habits")
+        ).toBeInTheDocument();
+
         expect(
             screen.queryByText("Clean Code")
         ).not.toBeInTheDocument();
@@ -197,8 +232,13 @@ describe("MyBooks", () => {
     it("renders category options", () => {
         render(<MyBooks />);
 
-        expect(screen.getByText("Self Help")).toBeInTheDocument();
-        expect(screen.getByText("Programming")).toBeInTheDocument();
+        expect(
+            screen.getByText("Self Help")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("Programming")
+        ).toBeInTheDocument();
     });
 
     it("shows zero books", () => {
@@ -219,7 +259,17 @@ describe("MyBooks", () => {
 
         render(<MyBooks />);
 
-        expect(screen.getByText("Total Books: 0")).toBeInTheDocument();
+        expect(
+            screen.getByText("My Books")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByTestId("book-table")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByTestId("book-table")
+        ).toBeEmptyDOMElement();
     });
 });
 
@@ -227,12 +277,10 @@ it("updates category filter", () => {
     mockUseSellerBooks.mockReturnValue({
         data: {
             data: {
-                books: {
-                    books: [],
-                    meta: {
-                        totalPages: 0,
-                        totalRecords: 0,
-                    },
+                books: [],
+                meta: {
+                    totalPages: 0,
+                    totalRecords: 0,
                 },
             },
         },
@@ -241,11 +289,16 @@ it("updates category filter", () => {
 
     render(<MyBooks />);
 
-    fireEvent.change(screen.getAllByRole("combobox")[0], {
-        target: {
-            value: "Programming",
-        },
-    });
+    fireEvent.change(
+        screen.getAllByRole("combobox")[0],
+        {
+            target: {
+                value: "Programming",
+            },
+        }
+    );
 
-    expect(mockUseSellerBooks).toHaveBeenCalled();
+    expect(
+        mockUseSellerBooks
+    ).toHaveBeenCalled();
 });

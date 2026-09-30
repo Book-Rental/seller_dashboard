@@ -5,14 +5,12 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import SellerSidebar from "../components/SellerSidebar";
 
 import {
-    redirectToDashboard,
     redirectToOrders,
     redirectToMyBooks,
     redirectToAddBook,
 } from "../utils/sellerNavigation";
 
 vi.mock("../utils/sellerNavigation", () => ({
-    redirectToDashboard: vi.fn(),
     redirectToOrders: vi.fn(),
     redirectToMyBooks: vi.fn(),
     redirectToAddBook: vi.fn(),
@@ -23,18 +21,12 @@ describe("SellerSidebar", () => {
         vi.clearAllMocks();
     });
 
-    it("renders all sidebar menu items", () => {
+    it("renders the sidebar heading and menu items", () => {
         render(<SellerSidebar currentPage="dashboard" />);
 
         expect(
             screen.getByRole("heading", {
                 name: /seller dashboard/i,
-            })
-        ).toBeInTheDocument();
-
-        expect(
-            screen.getByRole("button", {
-                name: /dashboard/i,
             })
         ).toBeInTheDocument();
 
@@ -55,6 +47,12 @@ describe("SellerSidebar", () => {
                 name: /add book/i,
             })
         ).toBeInTheDocument();
+
+        expect(
+            screen.queryByRole("button", {
+                name: /dashboard/i,
+            })
+        ).not.toBeInTheDocument();
     });
 
     it("highlights the current page", () => {
@@ -68,18 +66,26 @@ describe("SellerSidebar", () => {
         expect(ordersButton).toHaveClass("text-white");
     });
 
-    it("calls redirectToDashboard when Dashboard is clicked", async () => {
-        const user = userEvent.setup();
+    it("highlights My Books when current page is seller-my-books", () => {
+        render(<SellerSidebar currentPage="seller-my-books" />);
 
-        render(<SellerSidebar currentPage="dashboard" />);
+        const myBooksButton = screen.getByRole("button", {
+            name: /my books/i,
+        });
 
-        await user.click(
-            screen.getByRole("button", {
-                name: /dashboard/i,
-            })
-        );
+        expect(myBooksButton).toHaveClass("bg-blue-600");
+        expect(myBooksButton).toHaveClass("text-white");
+    });
 
-        expect(redirectToDashboard).toHaveBeenCalledTimes(1);
+    it("highlights Add Book when current page is seller-add-book", () => {
+        render(<SellerSidebar currentPage="seller-add-book" />);
+
+        const addBookButton = screen.getByRole("button", {
+            name: /add book/i,
+        });
+
+        expect(addBookButton).toHaveClass("bg-blue-600");
+        expect(addBookButton).toHaveClass("text-white");
     });
 
     it("calls redirectToOrders when Orders is clicked", async () => {
@@ -124,4 +130,3 @@ describe("SellerSidebar", () => {
         expect(redirectToAddBook).toHaveBeenCalledTimes(1);
     });
 });
-
