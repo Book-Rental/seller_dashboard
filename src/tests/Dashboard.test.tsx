@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Dashboard from "../pages/Dashboard";
+import { RecentOrder } from "../types/order";
 
 const {
     mockUseDashboard,
@@ -29,26 +30,48 @@ vi.mock("../utils/sellerNavigation", () => ({
 }));
 
 vi.mock("../components/SellerLayout", () => ({
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    default: ({ children }: any) => (
-        <div data-testid="seller-layout">{children}</div>
-    ),
+    default: ({
+        children,
+    }: {
+        children: React.ReactNode;
+    }) => <div data-testid="seller-layout">{children}</div>,
 }));
 
 vi.mock("../components/RecentOrdersTable", () => ({
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    default: ({ orders }: any) => (
+    default: ({
+        orders,
+        onView,
+    }: {
+        orders: RecentOrder[];
+        onView: (order: RecentOrder) => void;
+    }) => (
         <div data-testid="recent-orders-table">
-            {orders.length} Orders
+            <span>{orders.length} Orders</span>
+
+            {orders.map((order) => (
+                <button
+                    key={order.orderId}
+                    onClick={() => onView(order)}
+                >
+                    View {order.orderId}
+                </button>
+            ))}
         </div>
     ),
 }));
 
 vi.mock("@rentbook/rentbook-ui-lib", () => ({
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Rb_Text: ({ children }: any) => <div>{children}</div>,
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Rb_LoadingSpinner: ({ text }: any) => (
+    Rb_Text: ({
+        children,
+    }: {
+        children: React.ReactNode;
+    }) => <div>{children}</div>,
+
+    Rb_LoadingSpinner: ({
+        text,
+    }: {
+        text: string;
+    }) => (
         <div data-testid="loading-spinner">{text}</div>
     ),
 }));
@@ -85,12 +108,8 @@ describe("Dashboard", () => {
         });
     });
 
-    it("renders dashboard overview", () => {
+    it("renders seller layout", () => {
         render(<Dashboard />);
-
-        expect(
-            screen.getByText("Dashboard Overview")
-        ).toBeInTheDocument();
 
         expect(
             screen.getByTestId("seller-layout")
@@ -128,6 +147,10 @@ describe("Dashboard", () => {
         expect(
             screen.getByText("Loading dashboard...")
         ).toBeInTheDocument();
+
+        expect(
+            screen.queryByTestId("recent-orders-table")
+        ).not.toBeInTheDocument();
     });
 
     it("renders recent orders table", () => {
@@ -142,7 +165,7 @@ describe("Dashboard", () => {
         ).toBeInTheDocument();
     });
 
-    it("redirects when View All is clicked", async () => {
+    it("redirects to orders when View All is clicked", async () => {
         const user = userEvent.setup();
 
         render(<Dashboard />);
@@ -154,6 +177,23 @@ describe("Dashboard", () => {
         );
 
         expect(mockRedirectToOrders).toHaveBeenCalledTimes(1);
+    });
+
+    it("redirects to order details when an order is viewed", async () => {
+        const user = userEvent.setup();
+
+        render(<Dashboard />);
+
+        await user.click(
+            screen.getByRole("button", {
+                name: "View 1",
+            })
+        );
+
+        expect(mockRedirectToOrderDetails).toHaveBeenCalledTimes(1);
+        expect(mockRedirectToOrderDetails).toHaveBeenCalledWith({
+            orderId: "1",
+        });
     });
 
     it("renders zero values when dashboard data is unavailable", () => {

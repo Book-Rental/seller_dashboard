@@ -20,9 +20,11 @@ vi.mock("../utils/sellerNavigation", () => ({
 }));
 
 vi.mock("../components/SellerLayout", () => ({
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     default: ({ children }: any) => (
-        <div data-testid="seller-layout">{children}</div>
+        <div data-testid="seller-layout">
+            {children}
+        </div>
     ),
 }));
 
@@ -44,9 +46,12 @@ vi.mock("../components/OrderTable", () => ({
 }));
 
 vi.mock("@rentbook/rentbook-ui-lib", () => ({
-     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Rb_Text: ({ children }: any) => <div>{children}</div>,
- // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Rb_Text: ({ children }: any) => (
+        <div>{children}</div>
+    ),
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     Pagination: ({ currentPage, totalPages }: any) => (
         <div data-testid="pagination">
             {currentPage}/{totalPages}
@@ -95,35 +100,66 @@ describe("Orders", () => {
     it("renders page title", () => {
         render(<Orders />);
 
-        expect(screen.getByText("Orders")).toBeInTheDocument();
-        expect(screen.getByTestId("seller-layout")).toBeInTheDocument();
+        expect(
+            screen.getByText("Orders")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByTestId("seller-layout")
+        ).toBeInTheDocument();
     });
 
     it("renders total orders", () => {
         render(<Orders />);
 
         expect(
-            screen.getByText((_, element) =>
-                element?.textContent === "Total Orders : 4"
-            )
+            screen.getByRole("button", {
+                name: /All \(4\)/i,
+            })
         ).toBeInTheDocument();
     });
 
     it("renders status filter buttons", () => {
         render(<Orders />);
 
-        expect(screen.getByRole("button", { name: /All/i })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Active/i })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Shipped/i })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Delivered/i })).toBeInTheDocument();
-        expect(screen.getByRole("button", { name: /Returned/i })).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", {
+                name: /All/i,
+            })
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("button", {
+                name: /Active/i,
+            })
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("button", {
+                name: /Shipped/i,
+            })
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("button", {
+                name: /Delivered/i,
+            })
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByRole("button", {
+                name: /Returned/i,
+            })
+        ).toBeInTheDocument();
     });
 
     it("filters orders by search", () => {
         render(<Orders />);
 
         fireEvent.change(
-            screen.getByPlaceholderText("Search Order ID..."),
+            screen.getByPlaceholderText(
+                "Search Order ID..."
+            ),
             {
                 target: {
                     value: "ORD003",
@@ -131,8 +167,13 @@ describe("Orders", () => {
             }
         );
 
-        expect(screen.getByText("ORD003")).toBeInTheDocument();
-        expect(screen.queryByText("ORD001")).not.toBeInTheDocument();
+        expect(
+            screen.getByText("ORD003")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByText("ORD001")
+        ).not.toBeInTheDocument();
     });
 
     it("filters active orders", async () => {
@@ -146,9 +187,17 @@ describe("Orders", () => {
             })
         );
 
-        expect(screen.getByText("ORD001")).toBeInTheDocument();
-        expect(screen.getByText("ORD002")).toBeInTheDocument();
-        expect(screen.queryByText("ORD003")).not.toBeInTheDocument();
+        expect(
+            screen.getByText("ORD001")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.getByText("ORD002")
+        ).toBeInTheDocument();
+
+        expect(
+            screen.queryByText("ORD003")
+        ).not.toBeInTheDocument();
     });
 
     it("shows loading skeleton", () => {
@@ -179,7 +228,9 @@ describe("Orders", () => {
             screen.getByTestId("pagination")
         ).toBeInTheDocument();
 
-        expect(screen.getByText("1/2")).toBeInTheDocument();
+        expect(
+            screen.getByText("1/2")
+        ).toBeInTheDocument();
     });
 
     it("hides pagination when only one page exists", () => {
@@ -218,9 +269,9 @@ describe("Orders", () => {
         render(<Orders />);
 
         expect(
-            screen.getByText((_, element) =>
-                element?.textContent === "Total Orders : 0"
-            )
+            screen.getByRole("button", {
+                name: /All \(0\)/i,
+            })
         ).toBeInTheDocument();
 
         expect(
